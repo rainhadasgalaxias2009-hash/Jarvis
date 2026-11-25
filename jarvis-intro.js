@@ -90,7 +90,12 @@ function draw(ts){
   if(t>2.1&&t<4.2){const sw=t*5.5;g.lineWidth=3;g.strokeStyle='rgba('+B+','+.9*Math.min(1,(t-2.1)*3)*(1-pg(t,3.8,.4))+')';g.beginPath();g.arc(CX,CY,R*.66,sw,sw+1.3);g.stroke()}
   if(t>2.2){const a=pg(t,2.2,.6),amp=t<4?1:Math.max(.12,1-(t-4)*.9);g.lineWidth=2;g.strokeStyle='rgba('+col+','+.9*a+')';g.beginPath();
     for(let i=0;i<72;i++){const an=i/72*TAU-Math.PI/2+t*.1,n=.5+.5*Math.sin(t*6+i*.7)*Math.sin(t*2.1+i*.31),r0=R*.795,h=R*(.012+.1*amp*n*a);g.moveTo(CX+Math.cos(an)*r0,CY+Math.sin(an)*r0);g.lineTo(CX+Math.cos(an)*(r0+h),CY+Math.sin(an)*(r0+h))}g.stroke()}
-  if(t>2.4){const p=pg(t,2.4,1.1),L=6*R*.965;g.lineWidth=1.4;g.strokeStyle='rgba('+col+',.85)';g.setLineDash([p*L,L]);hexPath(g,CX,CY,R*.965,t*.12);g.stroke();g.setLineDash([]);
+  if(t>2.4){const p=pg(t,2.4,1.1),ro=t*.12,hr=R*.965;g.lineWidth=1.4;g.strokeStyle='rgba('+col+',.85)';g.lineJoin='miter';
+    if(p>=1){hexPath(g,CX,CY,hr,ro);g.stroke()}
+    else{const v=[];for(let i=0;i<=6;i++){const an=ro+i*Math.PI/3-Math.PI/2;v.push([CX+Math.cos(an)*hr,CY+Math.sin(an)*hr])}
+      const n=p*6,w=Math.floor(n),f=n-w;g.beginPath();g.moveTo(v[0][0],v[0][1]);
+      for(let i=1;i<=w;i++)g.lineTo(v[i][0],v[i][1]);
+      if(w<6)g.lineTo(v[w][0]+(v[w+1][0]-v[w][0])*f,v[w][1]+(v[w+1][1]-v[w][1])*f);g.stroke()}
     if(p>=1){g.fillStyle='rgba('+col+',1)';for(let i=0;i<6;i++){const an=t*.12+i*Math.PI/3-Math.PI/2;g.beginPath();g.arc(CX+Math.cos(an)*R*.965,CY+Math.sin(an)*R*.965,3,0,TAU);g.fill()}}}
   if(t>1.5){const a=pg(t,1.5,.6),pu=1+.12*Math.sin(t*5);
     g.lineWidth=1.5;g.strokeStyle='rgba(235,252,255,'+.9*a+')';tri(CX,CY,R*.1*pu,t*.9);g.stroke();
