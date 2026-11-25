@@ -43,33 +43,29 @@
 /* ========== 2) COFRE / ESTÚDIO POR CIMA DO JARVIS ========== */
 (function () {
   try {
-    const KEEP = /estudio|studio/i;   // páginas que ficam abertas em segundo plano ao voltar (o cofre fecha e tranca de novo)
+    const KEEP = /estudio|studio/i;   // fica guardado em segundo plano ao voltar (abas e edições intactas). O cofre fecha, pois salva na hora.
     const norm = p => p.replace(/index\.html?$/i, '').replace(/\/+$/, '');
     const isApp = x => x.origin === location.origin && norm(x.pathname) !== norm(location.pathname) &&
       !/\.(mp3|wav|ogg|m4a|json|png|jpe?g|webp|gif|svg|js|css|txt|pdf)$/i.test(x.pathname);
 
     const css = document.createElement('style');
     css.textContent = '#ja-ov{position:fixed;inset:0;z-index:100;display:none;background:#000308}' +
-      '#ja-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000308}' +
-      '#ja-back{position:fixed;z-index:101;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;transform:translateX(-50%);' +
-      'border:0;padding:6px 16px;font:700 10px Orbitron,system-ui,sans-serif;letter-spacing:.22em;color:var(--ac,#2fd8ff);' +
-      'background:rgba(0,8,16,.75);opacity:.85;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}';
+      '#ja-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000308}';
     document.head.appendChild(css);
-    const ov = document.createElement('div'); ov.id = 'ja-ov';
-    const back = document.createElement('button'); back.id = 'ja-back'; back.textContent = '‹ JARVIS';
-    ov.appendChild(back); document.body.appendChild(ov);
+    const ov = document.createElement('div'); ov.id = 'ja-ov'; document.body.appendChild(ov);
 
-    // Enquanto o painel está aberto, o Jarvis para de desenhar (economiza bateria) mas continua vivo: timers, voz e microfone seguem funcionando.
+    // Com o painel aberto o Jarvis para de desenhar (economiza bateria), mas continua vivo: timers, voz e microfone seguem funcionando.
     let paused = false, open = false;
     const _re = reactor, _bg = bgdraw;
     reactor = function () { if (!paused) return _re.apply(this, arguments); };
     bgdraw = function () { if (!paused) return _bg.apply(this, arguments); };
 
     const frames = new Map();
+    const flushFrame = f => { try { f.contentWindow.dispatchEvent(new Event('pagehide')); } catch (_) {} }; // o studio salva ao receber isso
     function hide(fromPop) {
       if (!open) return;
       open = false; ov.style.display = 'none'; paused = false;
-      frames.forEach((f, k) => { if (!KEEP.test(k)) { f.remove(); frames.delete(k); } else f.style.display = 'none'; });
+      frames.forEach((f, k) => { flushFrame(f); if (!KEEP.test(k)) { f.remove(); frames.delete(k); } else f.style.display = 'none'; });
       if (!fromPop && history.state && history.state.ja) history.back();
     }
     function onLoad(f, key) {
@@ -77,8 +73,12 @@
         const w = f.contentWindow; if (w.location.href === 'about:blank') return;
         if (norm(w.location.pathname) === norm(location.pathname)) { f.remove(); frames.delete(key); hide(); return; } // carregou o próprio Jarvis dentro do quadro
         if (w.navigation) w.navigation.addEventListener('navigate', e => {
-          if (e.destination.sameDocument || !e.cancelable) return;
-          try { const u = new URL(e.destination.url); if (u.origin === location.origin && norm(u.pathname) === norm(location.pathname)) { e.preventDefault(); hide(); } } catch (_) {}
+          if (e.destination.sameDocument || !e.cancelable || e.navigationType === 'reload' || e.navigationType === 'traverse') return;
+          try {
+            const u = new URL(e.destination.url); if (u.origin !== location.origin) return;
+            if (norm(u.pathname) === norm(location.pathname)) { e.preventDefault(); hide(); }           // botão "↩ JARVIS" do cofre / studio
+            else if (isApp(u) && norm(u.pathname) !== key) { e.preventDefault(); openApp(u.href); }      // studio ⇄ cofre
+          } catch (_) {}
         });
       } catch (_) {}
     }
@@ -94,8 +94,7 @@
       ov.style.display = 'block'; paused = true;
       if (!open) { open = true; history.pushState({ ja: 1 }, ''); }
     }
-    back.onclick = () => hide();
-    addEventListener('popstate', () => hide(true));
+    addEventListener('popstate', () => hide(true));   // gesto de voltar do Android fecha o painel
 
     // pega TODAS as formas de ir para outra página do mesmo site:
     if (window.navigation) navigation.addEventListener('navigate', e => {   // location.href = ..., links normais
