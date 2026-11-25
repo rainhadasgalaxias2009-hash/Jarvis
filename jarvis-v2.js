@@ -20,7 +20,7 @@ window.local=function(raw){if(/(abrir|abre|abra) (o )?cofre/.test(norm(raw))){op
 
 /* carrega a abertura nova sozinho (não precisa mexer no index.html) */
 if(!document.querySelector('script[src*="jarvis-intro"]')){
-  const s=document.createElement('script');s.src='jarvis-intro.js';document.body.appendChild(s)}
+  const s=document.createElement('script');s.src='jarvis-intro.js?v=3';document.body.appendChild(s)}
 })();
 
 /* ===== DETALHES NOVOS DENTRO DO NÚCLEO ===== */
