@@ -3,215 +3,336 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<meta name="theme-color" content="#010510">
-<title>JARVIS · STUDIO</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#000308">
+<title>STUDIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/ace.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/ext-language_tools.js"></script>
 <style>
-:root{color-scheme:dark;--b0:#010510;--b1:#00f0ff;--b2:#2fd8ff;--b3:#3d9bff;--b4:#2459e8;--b5:#12307f;--fg:#dff6ff;--mut:#6f9fd0;--ok:#7dffd0;--bad:#ff6b8a;--cp:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);--mono:"JetBrains Mono",ui-monospace,monospace;--hud:Orbitron,system-ui,sans-serif}
+:root{color-scheme:dark;--ac:#1f86ff;--ac2:#8ccbff;--acr:31,134,255;--ac2r:140,203,255;--fg:#dff8ff;--mut:#6aa6c2;--hud:Orbitron,system-ui,sans-serif;--mono:"Share Tech Mono",ui-monospace,monospace}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--b0)}
-body{height:100dvh;display:flex;flex-direction:column;color:var(--fg);font:14px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-button,select{font-family:inherit;cursor:pointer}
-#bg{position:fixed;inset:0;z-index:0;background:radial-gradient(70% 45% at 50% -5%,rgba(0,240,255,.26),transparent 70%),radial-gradient(60% 40% at 0 100%,rgba(36,89,232,.4),transparent 70%),radial-gradient(50% 40% at 100% 60%,rgba(61,155,255,.2),transparent 70%),var(--b0)}
-#bg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(47,216,255,.06) 1px,transparent 1px) 0 0/100% 28px,linear-gradient(90deg,rgba(47,216,255,.06) 1px,transparent 1px) 0 0/28px 100%;animation:dr 14s linear infinite;mask:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
-@keyframes dr{to{background-position:0 28px,28px 0}}
-body>*:not(#bg):not(#ts):not(#pv){position:relative;z-index:2}
-.cp{position:relative;clip-path:var(--cp);background:linear-gradient(135deg,var(--b1),var(--b4) 60%,var(--b5))}
-.cp::before{content:"";position:absolute;inset:1px;clip-path:var(--cp);background:linear-gradient(160deg,rgba(10,29,77,.92),rgba(3,10,28,.96));z-index:0}
-.cp>*{position:relative;z-index:1}
-header{display:flex;align-items:center;gap:10px;padding:8px 12px;flex:none}
-header a{color:var(--b1);text-decoration:none;font:700 12px var(--hud);padding:8px 14px;background:rgba(0,240,255,.12);clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
-.lg{flex:1;font:900 11px var(--hud);letter-spacing:.3em;color:var(--b1);text-shadow:0 0 12px var(--b1)}
-#sv{font:11px var(--mono);color:var(--ok)}
-.v{display:none;flex:1;min-height:0;flex-direction:column;margin:0 10px 6px}
-.v.on{display:flex}
-.b{border:0;color:var(--b2);background:linear-gradient(180deg,rgba(61,155,255,.28),rgba(36,89,232,.14));font:600 12px var(--mono);padding:9px 12px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);min-height:38px;white-space:nowrap}
-.b:active{background:var(--b3);color:#001}
-.b.g{color:var(--ok)}.b.d{color:var(--bad)}
-.row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 6px;flex:none}
-input[type=text],input[type=password]{width:100%;border:0;outline:0;background:rgba(36,89,232,.16);color:var(--fg);font:15px var(--mono);padding:11px 14px;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);caret-color:var(--b1)}
-#fn{flex:1;min-width:0}
-#edw{flex:1;min-height:0;display:flex;flex-direction:column;padding:4px}
+html,body{margin:0;height:100%;overflow:hidden;background:#000308}
+body{height:100dvh;color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;position:relative;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font-family:inherit;cursor:pointer}
+#neb{position:fixed;inset:0;z-index:0;background:radial-gradient(60% 35% at 50% 0,rgba(var(--acr),.24),transparent 70%),radial-gradient(50% 35% at 8% 100%,rgba(var(--ac2r),.1),transparent 70%),radial-gradient(50% 35% at 100% 70%,rgba(var(--acr),.12),transparent 70%),#000308}
+#neb::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(var(--acr),.05) 1px,transparent 1px) 0 0/100% 28px,linear-gradient(90deg,rgba(var(--acr),.05) 1px,transparent 1px) 0 0/28px 100%;mask:radial-gradient(ellipse at center,#000 25%,transparent 80%);-webkit-mask:radial-gradient(ellipse at center,#000 25%,transparent 80%)}
+header,#tabs,#tl,#edw,#sym,#dock{position:relative;z-index:5}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px 4px;flex:none}
+.logo{display:flex;align-items:center;gap:9px;font:900 11px var(--hud);letter-spacing:.42em;color:var(--ac);text-shadow:0 0 10px var(--ac)}
+.logo i{width:11px;height:11px;background:var(--ac);clip-path:polygon(50% 0,100% 100%,0 100%);filter:drop-shadow(0 0 4px var(--ac))}
+#sv{flex:1;text-align:right;font:10px var(--mono);letter-spacing:.2em;color:var(--ac2)}
+.hx{position:relative;display:block;text-decoration:none;width:44px;height:50px;border:0;padding:0;background:var(--ac);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);color:var(--ac);font:700 6px var(--hud);letter-spacing:.06em;flex:none}
+.hx::before{content:"";position:absolute;inset:1.5px;background:linear-gradient(#05182a,#020a12);clip-path:inherit}
+.hx:active::before{background:rgba(var(--acr),.4)}
+.hx span{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:100%}
+.hx b{font-size:17px;font-weight:400;line-height:1;filter:drop-shadow(0 0 6px rgba(var(--acr),.9))}
+.hx.xs{width:34px;height:39px}.hx.xs b{font-size:15px}
+.hx.big{width:58px;height:66px}.hx.big b{font-size:23px}
+#tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 14px 6px;flex:none}
+#tabs::-webkit-scrollbar,.row::-webkit-scrollbar,#sym::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;flex:none;max-width:210px;background:rgba(var(--acr),.16);clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);color:var(--mut);font:700 10px var(--hud);letter-spacing:.08em}
+.tab span{padding:11px 2px 11px 18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab button{border:0;background:none;color:inherit;font:17px sans-serif;padding:6px 16px 8px 8px}
+.tab.on{background:var(--ac);color:#001}
+.row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 14px 6px;flex:none}
+.sb{border:0;color:var(--ac);background:rgba(var(--acr),.16);font:700 10px var(--hud);letter-spacing:.12em;padding:11px 15px;clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);white-space:nowrap;flex:none}
+.sb:active{background:var(--ac);color:#001}
+.sb.g{color:var(--ac2);background:rgba(var(--ac2r),.16)}.sb.g:active{background:var(--ac2)}
+.sb.d{color:#ff7d97;background:rgba(255,90,120,.14)}.sb.d:active{background:#ff5a78;color:#100}
+#edw{flex:1;min-height:0;margin:0 12px;display:flex;flex-direction:column;border:1px solid rgba(var(--acr),.5);background:#020a14;box-shadow:0 0 18px rgba(var(--acr),.18)}
 #ed{flex:1;min-height:0;position:relative}
-#ed.ace_editor{background:#030a1c;font-family:var(--mono)}
-.ace_gutter{background:#040d24!important}.ace_gutter-active-line,.ace_marker-layer .ace_active-line{background:rgba(47,216,255,.08)!important}
-.ace_cursor{color:#00f0ff!important}.ace_search{background:#06173a!important}
-#sb{font:10px var(--mono);color:var(--mut);display:flex;justify-content:space-between;padding:4px 8px;flex:none}
-#sym{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:6px 0 2px;flex:none}
-#sym .b{min-width:42px;padding:9px 8px;font-size:15px}
-body.kb nav{display:none}
-nav{display:flex;gap:8px;padding:6px 10px 8px;flex:none}
-nav .b{flex:1;font:700 11px var(--hud);letter-spacing:.14em;padding:13px 4px}
-nav .b.on{background:var(--b3);color:#001;box-shadow:0 0 18px var(--b2)}
-.ls{flex:1;overflow-y:auto;min-height:0;padding:4px}
-.it{display:flex;align-items:center;gap:8px;padding:12px;margin-bottom:8px}
-.it .t{flex:1;min-width:0}
-.it .t b{display:block;font:600 14px var(--mono);color:var(--b2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.it .t small{color:var(--mut);font:11px var(--mono)}
-.cl{display:block;padding:12px;margin-bottom:10px}
-.cl h4{margin:0 0 6px;font:600 13px var(--mono);color:var(--b2)}
-.cl pre{margin:0 0 10px;font:12px/1.45 var(--mono);color:#cfe9ff;white-space:pre-wrap;word-break:break-all;max-height:96px;overflow:hidden}
-.cl .row{padding:0}
-.em{color:var(--mut);text-align:center;padding:30px 10px;font:13px/1.5 var(--mono)}
-.lk{margin:auto;width:min(100%,340px);padding:30px 22px;display:flex;flex-direction:column;gap:12px;text-align:center}
-.lk svg{width:64px;height:64px;margin:0 auto;color:var(--b1);filter:drop-shadow(0 0 10px var(--b1))}
-.lk h2{margin:0;font:900 14px var(--hud);letter-spacing:.3em;color:var(--b1)}
-.lk p{margin:0;color:var(--mut);font:12px/1.5 var(--mono)}
-.lk.sh{animation:sk .3s}@keyframes sk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-#ts{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);opacity:0;z-index:99;padding:11px 22px;background:var(--b3);color:#001;font:700 12px var(--mono);clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);transition:.25s;pointer-events:none}
-#ts.on{opacity:1;transform:translateX(-50%)}
-#pv{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:var(--b0);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#ed.ace_editor{background:#020a14!important;font-family:"JetBrains Mono",monospace}
+.ace_gutter{background:#03101c!important}
+.ace_gutter-active-line,.ace_marker-layer .ace_active-line{background:rgba(var(--acr),.12)!important}
+.ace_cursor{color:var(--ac2)!important}.ace_search{background:#06173a!important}
+#sb{font:10px var(--mono);letter-spacing:.12em;color:var(--mut);display:flex;justify-content:space-between;padding:5px 10px;flex:none;border-top:1px solid rgba(var(--acr),.25)}
+#sym{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:6px 12px 2px;flex:none}
+#sym .sb{min-width:42px;padding:10px 8px;font:15px var(--mono)}
+#dock{flex:none;display:flex;justify-content:center;align-items:flex-start;gap:8px;height:76px;padding-top:2px}
+#dock .hx{animation:jp .75s cubic-bezier(.2,1,.3,1) both}
+#dock .hx:nth-child(1),#dock .hx:nth-child(3){margin-top:12px;animation-delay:.5s}
+#dock .hx:nth-child(2){margin-top:-2px;animation-delay:.35s}
+body.kb #dock{display:none}
+.in{width:100%;border:0;outline:0;background:rgba(var(--acr),.12);color:var(--fg);font:15px var(--mono);padding:13px 18px;caret-color:var(--ac);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+#sh{position:fixed;inset:0;z-index:40;pointer-events:none}
+#sh.open{pointer-events:auto}
+#shd{position:absolute;inset:0;background:rgba(0,3,8,.6);opacity:0;transition:opacity .3s}
+#sh.open #shd{opacity:1}
+#shp{position:absolute;left:0;right:0;bottom:0;height:80dvh;display:flex;flex-direction:column;padding:30px 20px calc(16px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.8,.2,1);clip-path:polygon(0 30px,30px 0,calc(50% - 70px) 0,calc(50% - 46px) 14px,calc(50% + 46px) 14px,calc(50% + 70px) 0,calc(100% - 30px) 0,100% 30px,100% 100%,0 100%);background:linear-gradient(rgba(var(--acr),.9),rgba(var(--acr),.9)) top/100% 2px no-repeat,linear-gradient(rgba(var(--acr),.14),rgba(var(--acr),.03) 40%),#020b14}
+#sh.open #shp{transform:none}
+#sht{text-align:center;font:700 12px var(--hud);letter-spacing:.4em;color:var(--ac);text-shadow:0 0 10px var(--ac);padding:2px 0 12px;flex:none}
+#shx{position:absolute;right:24px;top:26px;width:24px;height:24px;transform:rotate(45deg);border:1.5px solid var(--ac);background:transparent;color:var(--ac);font:400 18px/1 sans-serif;padding:0}
+#shb{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+.it{position:relative;margin-bottom:10px;background:rgba(var(--acr),.5);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
+.it::before{content:"";position:absolute;inset:1px;background:linear-gradient(135deg,rgba(var(--acr),.16),rgba(var(--acr),.03) 45%),#020a14;clip-path:inherit}
+.ib{position:relative;padding:12px 15px}
+.tp b{display:block;font:700 12px var(--hud);letter-spacing:.12em;color:var(--ac);text-shadow:0 0 8px rgba(var(--acr),.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp i{font:normal 10px var(--mono);color:var(--ac2);letter-spacing:.1em}
+.ib pre{margin:6px 0 0;font:12px/1.4 var(--mono);color:#cfe6ff;white-space:pre-wrap;word-break:break-all;max-height:36px;overflow:hidden}
+.mt{font:9px var(--mono);letter-spacing:.14em;color:var(--mut);margin:6px 0 10px}
+.ac{display:flex;gap:7px;flex-wrap:wrap}
+.cmd{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid rgba(var(--acr),.25);background:none;color:var(--fg);font:14px var(--mono);padding:14px 6px}
+.cmd:active{background:rgba(var(--acr),.3)}
+.em{color:var(--mut);font:12px/1.8 var(--mono);letter-spacing:.12em;text-align:center;margin:30px 10px;text-transform:uppercase}
+#pv{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:#000308;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 #pv.on{display:flex}
-#pv .row{padding:8px 10px;justify-content:space-between;align-items:center}
+#pv .row{align-items:center;justify-content:space-between;padding:8px 12px}
+#pvn{font:11px var(--mono);color:var(--mut)}
 #pv iframe{flex:1;border:0;background:#fff;min-height:0}
+#ts{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ac);color:#001;padding:10px 24px;font:700 11px var(--hud);letter-spacing:.16em;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);opacity:0;transition:.2s;pointer-events:none;z-index:70;white-space:nowrap}
+#ts.on{opacity:1}
+.jscan{position:fixed;left:0;right:0;top:0;height:2px;z-index:70;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(var(--acr),.95),transparent);box-shadow:0 0 18px 4px rgba(var(--acr),.55);animation:jsc 1.2s .1s ease-in both}
+@keyframes jsc{0%{transform:translateY(0);opacity:0}10%{opacity:1}85%{opacity:1}100%{transform:translateY(100dvh);opacity:0}}
+@keyframes jp{from{opacity:0;transform:translateY(50px) scale(.3) rotate(-35deg)}60%{opacity:1;transform:translateY(-5px) scale(1.07) rotate(3deg)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div id="bg"></div>
-<header><a href="index.html">‹ JARVIS</a><div class="lg">STUDIO</div><span id="sv"></span></header>
-
-<section class="v on" id="v-ed">
-  <div class="row"><input type="text" id="fn" placeholder="nome-do-arquivo.html" autocomplete="off" autocapitalize="off"><button class="b g" id="run">RODAR</button></div>
-  <div class="row" id="tl">
-    <button class="b" data-t="undo">DESFAZER</button><button class="b" data-t="redo">REFAZER</button>
-    <button class="b" data-t="find">BUSCAR</button><button class="b" data-t="goto">IR PARA</button>
-    <button class="b" data-t="sel">SEL +</button><button class="b" data-t="cmt">COMENTAR</button>
-    <button class="b" data-t="fold">DOBRAR</button><button class="b" data-t="wrap">QUEBRA</button>
-    <button class="b" data-t="a-">A−</button><button class="b" data-t="a+">A+</button>
-    <button class="b" data-t="copy">COPIAR</button><button class="b g" data-t="vault">→ COFRE</button><button class="b" data-t="dl">BAIXAR</button>
-  </div>
-  <div id="edw" class="cp"><div id="ed"></div><div id="sb"><span id="pos">1:1</span><span id="lang"></span></div></div>
-  <div id="sym"></div>
-</section>
-
-<section class="v" id="v-fl">
-  <div class="row"><button class="b g" id="nw">+ NOVO</button><button class="b" id="im">IMPORTAR</button><button class="b" id="dall">BAIXAR TUDO</button></div>
-  <div class="ls" id="fls"></div>
-</section>
-
-<section class="v" id="v-cf"><div class="ls" id="cfb" style="display:flex;flex-direction:column"></div></section>
-
-<nav><button class="b on" data-v="ed">EDITOR</button><button class="b" data-v="fl">ARQUIVOS</button><button class="b" data-v="cf">COFRE</button></nav>
-
-<div id="pv"><div class="row"><button class="b d" id="pvx">FECHAR</button><span id="pvn" style="font:11px var(--mono);color:var(--mut)"></span></div><iframe id="fr2" sandbox="allow-scripts allow-forms allow-modals"></iframe></div>
+<div id="neb"></div>
+<div class="jscan"></div>
+<header><div class="logo"><i></i>STUDIO</div><span id="sv"></span><a class="hx xs" href="index.html"><span><b>↩</b></span></a></header>
+<div id="tabs"></div>
+<div class="row" id="tl"></div>
+<div id="edw"><div id="ed"></div><div id="sb"><span id="pos">1:1</span><span id="lang"></span></div></div>
+<div id="sym"></div>
+<nav id="dock">
+<button class="hx" id="bf"><span><b>📁</b>ARQUIVOS</span></button>
+<button class="hx big" id="br"><span><b>▶</b>RODAR</span></button>
+<button class="hx" id="bc"><span><b>⌘</b>COMANDOS</span></button>
+</nav>
+<div id="pv"><div class="row"><button class="sb d" id="pvx">FECHAR</button><span id="pvn"></span></div><iframe id="fr2" sandbox="allow-scripts allow-forms allow-modals"></iframe></div>
+<div id="sh"><div id="shd"></div><div id="shp"><div id="sht"></div><button id="shx">+</button><div id="shb"></div></div></div>
 <div id="ts"></div>
 <input type="file" id="fi" multiple hidden>
 
 <script>
 const $=s=>document.querySelector(s);
-const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem('js_'+k));return v==null?d:v}catch(e){return d}};
-const sv=(k,v)=>{try{localStorage.setItem('js_'+k,JSON.stringify(v))}catch(e){toast('Armazenamento cheio')}};
-const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const ld=(k,d)=>{try{const v=localStorage.getItem('js_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem('js_'+k,JSON.stringify(v))}catch(e){}};
+const ldj=(k,d)=>{try{const v=localStorage.getItem('jp_'+k);return v?JSON.parse(v):d}catch(e){return d}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const ext=n=>((n.split('.').pop())||'').toLowerCase();
+const fmt=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
 const SAMPLE='<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{background:#030a1c;color:#00f0ff;font-family:sans-serif;display:grid;place-items:center;height:100vh;margin:0}\n  </style>\n</head>\n<body>\n  <h1>Olá, senhor.</h1>\n</body>\n</html>\n';
-let files=ld('files',null)||[{id:uid(),n:'bem-vindo.html',c:SAMPLE}],cur=ld('cur',null),tmr;
-if(!files.find(f=>f.id===cur))cur=files[0].id;
-const F=()=>files.find(f=>f.id===cur),ext=n=>((n.split('.').pop())||'').toLowerCase();
-function toast(t){const e=$('#ts');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1700)}
-function copy(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copiado')).catch(()=>toast('Não foi possível copiar'))}
-function dl(n,c){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/plain'}));a.download=n;document.body.appendChild(a);a.click();a.remove();toast('Baixando '+n)}
 
-/* ===== EDITOR (Ace: só desenha as linhas visíveis, aguenta arquivo grande) ===== */
-ace.config.set('basePath','https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/');
-const MODES={js:'javascript',mjs:'javascript',html:'html',htm:'html',css:'css',json:'json',md:'markdown',py:'python',ts:'typescript',xml:'xml',sh:'sh',yml:'yaml',yaml:'yaml',php:'php',java:'java',c:'c_cpp',cpp:'c_cpp',sql:'sql',txt:'text'};
+/* ===== TEMA (o mesmo do JARVIS / COFRE) ===== */
+const TH={azul:['#1f86ff','#8ccbff'],vermelho:['#ff3b3b','#ffb04a'],dourado:['#ffc233','#fff0a0'],roxo:['#b46bff','#ff8ae2'],verde:['#2cff8a','#d9ff7a']};
+const h2r=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)).join(',');
+(()=>{const n=TH[ldj('th','azul')]?ldj('th','azul'):'azul',p=TH[n],r=document.documentElement.style;
+ r.setProperty('--ac',p[0]);r.setProperty('--ac2',p[1]);r.setProperty('--acr',h2r(p[0]));r.setProperty('--ac2r',h2r(p[1]))})();
+
+/* ===== SONS (os mesmos do JARVIS) ===== */
+const fxOn=ldj('fx',true),vol=ldj('vol',.8),SU={};let AX=null;
+const idb=()=>new Promise((ok,no)=>{try{const r=indexedDB.open('jarvis_sons',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}});
+const idbGet=async k=>{try{const d=await idb();return await new Promise(ok=>{const q=d.transaction('s').objectStore('s').get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>ok(null)})}catch(e){return null}};
+async function loadSounds(){for(const k of ['click','ok','err','open']){const b=await idbGet(k);if(b){SU[k]=URL.createObjectURL(b);continue}try{const r=await fetch('sons/'+k+'.mp3',{method:'HEAD'});if(r.ok)SU[k]='sons/'+k+'.mp3'}catch(e){}}}
+function ax(){if(!AX){try{AX=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}if(AX.state==='suspended')AX.resume();return AX}
+function bp(f1,f2,d,v,type){const x=ax();if(!x)return;const t=x.currentTime,o=x.createOscillator(),g=x.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,v*vol),t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(x.destination);o.start(t);o.stop(t+d+.05)}
+const FB={click:()=>bp(2200,3200,.05,.05),ok:()=>{bp(900,0,.12,.07);setTimeout(()=>bp(1350,0,.18,.07),110)},err:()=>bp(300,120,.3,.1,'sawtooth'),open:()=>bp(400,1200,.15,.05)};
+function play(k){if(!fxOn)return;const u=SU[k];if(u){try{const a=new Audio(u);a.volume=Math.min(1,vol);a.play().catch(()=>{});return}catch(e){}}try{FB[k]&&FB[k]()}catch(e){}}
+
+function toast(t){const e=$('#ts');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1700)}
+function copy(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{play('ok');toast('COPIADO')}).catch(()=>{play('err');toast('NÃO FOI POSSÍVEL COPIAR')})}
+function dl(n,c){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/plain'}));a.download=n;document.body.appendChild(a);a.click();a.remove();toast('BAIXANDO '+n.toUpperCase())}
+
+/* ===== ARMAZENAMENTO (IndexedDB: um arquivo por vez, sem limite de 5MB) ===== */
+const DB=new Promise((ok,no)=>{const r=indexedDB.open('jarvis_studio',1);r.onupgradeneeded=()=>{r.result.createObjectStore('f');r.result.createObjectStore('m')};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const tx=async(s,mode,fn)=>{const d=await DB;return new Promise((ok,no)=>{const t=d.transaction(s,mode),r=fn(t.objectStore(s));t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error);t.onabort=()=>no(t.error)})};
+const dbGet=(s,k)=>tx(s,'readonly',st=>st.get(k));
+const dbPut=(s,k,v)=>tx(s,'readwrite',st=>st.put(v,k));
+const dbDel=(s,k)=>tx(s,'readwrite',st=>st.delete(k));
+
+/* ===== ESTADO ===== */
+const BIG=400000,HUGE=3000000;
+const MODES={js:'javascript',mjs:'javascript',jsx:'jsx',ts:'typescript',tsx:'tsx',html:'html',htm:'html',vue:'html',css:'css',scss:'scss',less:'less',json:'json',md:'markdown',py:'python',xml:'xml',svg:'xml',sh:'sh',bash:'sh',yml:'yaml',yaml:'yaml',php:'php',java:'java',c:'c_cpp',cpp:'c_cpp',h:'c_cpp',sql:'sql',go:'golang',rs:'rust',rb:'ruby',kt:'kotlin',swift:'swift',cs:'csharp',toml:'toml',ini:'ini',txt:'text'};
+let list=[],open=[],cur=null,PERF=false,tmr;
 const SS={},D=new Set();
-const val=f=>SS[f.id]?SS[f.id].getValue():f.c;
-function sess(f){if(!SS[f.id]){const s=ace.createEditSession(f.c,'ace/mode/'+(MODES[ext(f.n)]||'text'));s.setUseWorker(false);s.setTabSize(2);s.setUseSoftTabs(true);s.on('change',()=>{D.add(f.id);saveSoon()});SS[f.id]=s}return SS[f.id]}
-const ed=ace.edit('ed',{theme:'ace/theme/tomorrow_night_blue',fontSize:14,showPrintMargin:false,enableBasicAutocompletion:true,enableLiveAutocompletion:true,enableSnippets:true,highlightActiveLine:true,scrollPastEnd:.3,fixedWidthGutter:true,fontFamily:'JetBrains Mono,monospace'});
-ed.setSession(sess(F()));
+const meta=id=>list.find(f=>f.id===id);
+const getContent=id=>SS[id]?Promise.resolve(SS[id].getValue()):dbGet('f',id).then(c=>c||'');
+
+/* ===== EDITOR (Ace só desenha as linhas visíveis) ===== */
+ace.config.set('basePath','https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/');
+const ed=ace.edit('ed',{theme:'ace/theme/tomorrow_night_blue',fontSize:ld('fs',14),showPrintMargin:false,enableBasicAutocompletion:true,enableLiveAutocompletion:true,enableSnippets:true,highlightActiveLine:true,scrollPastEnd:.3,fixedWidthGutter:true,useWorker:false,animatedScroll:false,copyWithEmptySelection:true,fadeFoldWidgets:false});
+try{ed.setKeyboardHandler('ace/keyboard/vscode')}catch(e){}
 new ResizeObserver(()=>ed.resize()).observe($('#ed'));
-function stat(){const p=ed.getCursorPosition();$('#pos').textContent=(p.row+1)+':'+(p.column+1);$('#lang').textContent=(ext(F().n)||'txt').toUpperCase()+' · '+ed.session.getLength()+' linhas'}
-ed.selection.on('changeCursor',stat);ed.on('change',stat);
 ed.on('focus',()=>document.body.classList.add('kb'));ed.on('blur',()=>document.body.classList.remove('kb'));
-function saveSoon(){$('#sv').textContent='…';clearTimeout(tmr);tmr=setTimeout(()=>{files.forEach(f=>{if(D.has(f.id)&&SS[f.id])f.c=SS[f.id].getValue()});D.clear();sv('files',files.map(({id,n,c})=>({id,n,c})));sv('cur',cur);$('#sv').textContent='SALVO'},700)}
-$('#fn').value=F().n;
-$('#fn').onchange=()=>{const v=$('#fn').value.trim();if(!v)return;F().n=v;SS[F().id]&&SS[F().id].setMode('ace/mode/'+(MODES[ext(v)]||'text'));saveSoon();stat()};
+let sp=0;const statSoon=()=>{if(!sp)sp=requestAnimationFrame(()=>{sp=0;stat()})};
+ed.selection.on('changeCursor',statSoon);ed.on('change',statSoon);
+function stat(){const p=ed.getCursorPosition(),m=meta(cur);$('#pos').textContent=(p.row+1)+':'+(p.column+1);$('#lang').textContent=(PERF?'TURBO · ':'')+(m?ext(m.n)||'txt':'').toUpperCase()+' · '+ed.session.getLength()+' LINHAS'}
+
+async function sess(id){
+  if(SS[id])return SS[id];
+  const m=meta(id),c=(await dbGet('f',id))||'';
+  const s=ace.createEditSession(c,'ace/mode/'+(c.length>HUGE?'text':(MODES[ext(m.n)]||'text')));
+  s.setUseWorker(false);s.setTabSize(2);s.setUseSoftTabs(true);
+  s.on('change',()=>{D.add(id);saveSoon()});
+  SS[id]=s;return s}
+
+/* modo turbo: arquivo grande desliga o que pesa */
+function tune(){const m=meta(cur),n=m?m.len:0,P=n>BIG||ed.session.getLength()>8000;PERF=P;
+  ed.setOptions({enableLiveAutocompletion:!P,enableBasicAutocompletion:!P,enableSnippets:!P,highlightActiveLine:!P,highlightSelectedWord:!P,behavioursEnabled:!P,displayIndentGuides:!P});stat()}
+
+async function activate(id,line){
+  const s=await sess(id);cur=id;if(!open.includes(id))open.push(id);
+  ed.setSession(s);tune();renderTabs();sv('ui',{open,cur});
+  if(line)ed.gotoLine(line,0,true)}
+
+/* salvar: só o arquivo alterado, em segundo plano */
+function saveSoon(){$('#sv').textContent='…';clearTimeout(tmr);tmr=setTimeout(flush,PERF?2000:700)}
+let chain=Promise.resolve();
+const flush=()=>chain=chain.then(doFlush);
+async function doFlush(){const ids=[...D];D.clear();
+  try{for(const id of ids){const s=SS[id],m=meta(id);if(!s||!m)continue;const c=s.getValue();m.len=c.length;await dbPut('f',id,c)}
+    if(ids.length)await dbPut('m','list',list);$('#sv').textContent='SALVO'}catch(e){$('#sv').textContent='ERRO AO SALVAR'}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});addEventListener('pagehide',flush);
+
+/* ===== ABAS ===== */
+function renderTabs(){
+  $('#tabs').innerHTML=open.filter(meta).map(id=>'<div class="tab'+(id===cur?' on':'')+'" data-id="'+id+'"><span data-a="go">'+esc(meta(id).n)+'</span><button data-a="x">×</button></div>').join('');
+  const a=$('#tabs .on');if(a)a.scrollIntoView({inline:'nearest',block:'nearest'})}
+$('#tabs').onclick=async e=>{const b=e.target.closest('[data-a]'),t=e.target.closest('.tab');if(!b||!t)return;play('click');
+  if(b.dataset.a==='go')activate(t.dataset.id);else closeTab(t.dataset.id)};
+async function closeTab(id){
+  if(D.has(id))await flush();
+  open=open.filter(x=>x!==id);delete SS[id];
+  if(!open.length)open=[list.find(f=>f.id!==id)?.id||id];
+  if(cur===id||!open.includes(cur))await activate(open[open.length-1]);else{renderTabs();sv('ui',{open,cur})}}
+
+/* ===== ARQUIVOS ===== */
+async function newFile(n,c=''){const f={id:uid(),n,len:c.length};list.push(f);await dbPut('f',f.id,c);await dbPut('m','list',list);await activate(f.id)}
+async function deleteFile(id){
+  await dbDel('f',id);list=list.filter(f=>f.id!==id);open=open.filter(x=>x!==id);delete SS[id];D.delete(id);
+  if(!list.length){await newFile('novo.txt');return}
+  await dbPut('m','list',list);
+  if(!open.length)open=[list[0].id];
+  if(cur===id||!open.includes(cur))await activate(open[open.length-1]);else renderTabs()}
+async function renameFile(id,n){const m=meta(id);m.n=n;if(SS[id])SS[id].setMode('ace/mode/'+(MODES[ext(n)]||'text'));await dbPut('m','list',list);renderTabs();stat()}
+$('#fi').onchange=async()=>{let last;for(const f of [...$('#fi').files]){const c=await f.text(),x={id:uid(),n:f.name,len:c.length};await dbPut('f',x.id,c);list.push(x);last=x.id}
+  $('#fi').value='';await dbPut('m','list',list);if(last)activate(last);play('ok');toast('IMPORTADO')};
+
+/* ===== PAINEL DESLIZANTE ===== */
+const sh=$('#sh'),shb=$('#shb');
+function openSheet(t,node){$('#sht').textContent=t;shb.replaceChildren(node);sh.classList.add('open');play('open')}
+function closeSheet(){sh.classList.remove('open');try{document.activeElement.blur()}catch(e){}}
+$('#shd').onclick=closeSheet;$('#shx').onclick=closeSheet;
+
+function openExplorer(){
+  const r=document.createElement('div');
+  r.innerHTML='<div class="row" style="padding:0 0 8px"><button class="sb g" data-a="new">+ NOVO</button><button class="sb" data-a="imp">IMPORTAR</button><button class="sb" data-a="all">BAIXAR TUDO</button><button class="sb" data-a="srch">BUSCAR EM TODOS</button></div><input class="in" id="fq" placeholder="Filtrar arquivos…" autocomplete="off" style="margin-bottom:10px"><div id="fl2"></div>';
+  const L=r.querySelector('#fl2'),q=r.querySelector('#fq');
+  const draw=()=>{const s=q.value.toLowerCase();L.innerHTML=list.filter(f=>f.n.toLowerCase().includes(s)).map(f=>'<div class="it" data-id="'+f.id+'"><div class="ib"><div class="tp"><b>'+esc(f.n)+'</b></div><div class="mt">'+(f.id===cur?'ABERTO · ':'')+fmt(f.len)+'</div><div class="ac"><button class="sb g" data-a="open">ABRIR</button><button class="sb" data-a="rn">RENOMEAR</button><button class="sb" data-a="dl">BAIXAR</button><button class="sb d" data-a="rm">APAGAR</button></div></div></div>').join('')||'<p class="em">Nenhum arquivo</p>'};
+  draw();q.oninput=draw;
+  r.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;play('click');const a=b.dataset.a,it=b.closest('.it'),f=it&&meta(it.dataset.id);
+    if(a==='new'){const n=prompt('Nome do arquivo:','novo.html');if(n){closeSheet();await newFile(n.trim())}}
+    else if(a==='imp')$('#fi').click();
+    else if(a==='all'){for(const x of list){dl(x.n,await getContent(x.id));await new Promise(k=>setTimeout(k,400))}}
+    else if(a==='srch')openSearch();
+    else if(a==='open'){closeSheet();activate(f.id)}
+    else if(a==='dl')dl(f.n,await getContent(f.id));
+    else if(a==='rn'){const n=prompt('Novo nome:',f.n);if(n&&n.trim()){await renameFile(f.id,n.trim());draw()}}
+    else if(a==='rm'){if(confirm('Apagar '+f.n+'?')){await deleteFile(f.id);draw()}}};
+  openSheet('ARQUIVOS',r)}
+
+function openSearch(){
+  const r=document.createElement('div');
+  r.innerHTML='<input class="in" id="sq" placeholder="Buscar texto em todos os arquivos…" autocomplete="off" style="margin-bottom:10px"><div id="sr"><p class="em">Digite e toque em Enter</p></div>';
+  const box=r.querySelector('#sr'),inp=r.querySelector('#sq');
+  inp.onkeydown=async e=>{if(e.key!=='Enter')return;const q=inp.value.toLowerCase();if(!q)return;inp.blur();box.innerHTML='<p class="em">Buscando…</p>';
+    const out=[];
+    for(const f of list){if(out.length>=200)break;const c=await getContent(f.id),lc=c.toLowerCase();let i=lc.indexOf(q);if(i<0)continue;let line=1,last=0;
+      while(i>=0&&out.length<200){let p=c.indexOf('\n',last);while(p>=0&&p<i){line++;last=p+1;p=c.indexOf('\n',last)}
+        const e2=c.indexOf('\n',i);out.push({id:f.id,n:f.n,line,t:c.slice(last,e2<0?undefined:e2).trim().slice(0,120)});
+        if(e2<0)break;i=lc.indexOf(q,e2)}}
+    box.innerHTML=out.length?out.map(o=>'<div class="it" data-id="'+o.id+'" data-l="'+o.line+'"><div class="ib"><div class="tp"><i>'+esc(o.n)+' : '+o.line+'</i></div><pre>'+esc(o.t)+'</pre></div></div>').join(''):'<p class="em">Nada encontrado</p>'};
+  box.onclick=e=>{const it=e.target.closest('.it');if(!it)return;closeSheet();activate(it.dataset.id,+it.dataset.l)};
+  openSheet('BUSCAR EM ARQUIVOS',r);setTimeout(()=>inp.focus(),380)}
+
+/* ===== COMANDOS (paleta estilo VS Code) ===== */
+const LS=u=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+async function format(){const x=ext(meta(cur).n),B='https://cdn.jsdelivr.net/npm/js-beautify@1.15.1/js/lib/';
+  try{let fn;const o={indent_size:2,wrap_line_length:0};
+    if(['js','mjs','json','jsx','ts','tsx'].includes(x)){if(!window.js_beautify)await LS(B+'beautify.min.js');fn=js_beautify}
+    else if(['css','scss','less'].includes(x)){if(!window.css_beautify)await LS(B+'beautify-css.min.js');fn=css_beautify}
+    else if(['html','htm','xml','svg','vue'].includes(x)){if(!window.js_beautify)await LS(B+'beautify.min.js');if(!window.css_beautify)await LS(B+'beautify-css.min.js');if(!window.html_beautify)await LS(B+'beautify-html.min.js');fn=html_beautify}
+    else return toast('SEM FORMATADOR PARA .'+x.toUpperCase());
+    const sel=ed.getSelectedText(),pos=ed.getCursorPosition();toast('FORMATANDO…');
+    const out=fn(sel||ed.getValue(),o);
+    if(sel)ed.insert(out);else{ed.selectAll();ed.insert(out);ed.moveCursorToPosition(pos);ed.clearSelection()}
+    play('ok');toast('FORMATADO')}catch(e){play('err');toast('FALHOU (SEM INTERNET?)')}}
+function toCofre(){const t=ed.getSelectedText()||ed.getValue();if(!t.trim())return;let a=[];try{a=JSON.parse(localStorage.getItem('cofre_items'))||[]}catch(e){}
+  a.unshift({id:uid(),n:meta(cur).n,c:t});try{localStorage.setItem('cofre_items',JSON.stringify(a));play('ok');toast('GUARDADO NO COFRE')}catch(e){play('err');toast('COFRE CHEIO')}}
+let blobU=null;
+function run(){const m=meta(cur),x=ext(m.n),c=ed.getValue();let h;
+  if(x==='html'||x==='htm'||x==='svg')h=c;
+  else if(x==='js'||x==='mjs')h='<body style="background:#030a1c;color:#9fe8ff;font:13px monospace;padding:12px"><pre id=o></pre><script>const o=document.getElementById("o"),p=(...a)=>o.textContent+=a.map(x=>typeof x==="object"?JSON.stringify(x):x).join(" ")+"\\n";console.log=p;console.error=p;onerror=m=>p("ERRO: "+m);try{'+c.replace(/<\/script/gi,'<\\/script')+'}catch(e){p("ERRO: "+e.message)}<\/script>';
+  else if(x==='css')h='<style>'+c+'</style><h1>Título</h1><p>Texto de exemplo.</p><button>Botão</button>';
+  else h='<pre style="font:13px monospace;white-space:pre-wrap;padding:12px">'+esc(c)+'</pre>';
+  if(blobU)URL.revokeObjectURL(blobU);blobU=URL.createObjectURL(new Blob([h],{type:'text/html'}));
+  $('#fr2').src=blobU;$('#pvn').textContent=m.n;$('#pv').classList.add('on');play('open')}
+$('#pvx').onclick=()=>{$('#pv').classList.remove('on');$('#fr2').src='about:blank';if(blobU){URL.revokeObjectURL(blobU);blobU=null}};
+
+const X=c=>()=>ed.execCommand(c);
+const C=[
+ ['Desfazer',()=>ed.undo(),1],['Refazer',()=>ed.redo(),1],
+ ['Buscar',X('find'),1],['Substituir',X('replace'),1],['Ir para linha',X('gotoline'),1],['Buscar em todos os arquivos',openSearch,1],
+ ['Selecionar próxima igual',()=>ed.selectMore(1),1],['Cursor acima',()=>ed.selectMoreLines(-1),1],['Cursor abaixo',()=>ed.selectMoreLines(1),1],
+ ['Comentar linha',()=>ed.toggleCommentLines(),1],['Comentar bloco',()=>ed.toggleBlockComment()],
+ ['Duplicar linha',X('copylinesdown'),1],['Apagar linha',X('removeline'),1],['Mover linha para cima',X('movelinesup'),1],['Mover linha para baixo',X('movelinesdown'),1],
+ ['Indentar',X('indent')],['Remover indentação',X('outdent')],['MAIÚSCULAS',X('touppercase')],['minúsculas',X('tolowercase')],['Ordenar linhas',X('sortlines')],
+ ['Dobrar / abrir bloco',X('toggleFoldWidget'),1],['Dobrar tudo',X('foldall')],['Abrir tudo',X('unfoldall')],
+ ['Formatar código',format,1],
+ ['Quebra de linha',()=>ed.session.setUseWrapMode(!ed.session.getUseWrapMode()),1],
+ ['Mostrar espaços',()=>ed.setOption('showInvisibles',!ed.getOption('showInvisibles'))],
+ ['Números de linha',()=>ed.renderer.setShowGutter(!ed.renderer.getShowGutter())],
+ ['Fonte maior',()=>{const s=Math.min(28,ed.getFontSize()+1);ed.setFontSize(s);sv('fs',s)},1],['Fonte menor',()=>{const s=Math.max(8,ed.getFontSize()-1);ed.setFontSize(s);sv('fs',s)},1],
+ ['Selecionar tudo',()=>ed.selectAll()],['Ir ao início',()=>ed.navigateFileStart()],['Ir ao fim',()=>ed.navigateFileEnd()],
+ ['Copiar',()=>copy(ed.getSelectedText()||ed.getValue()),1],
+ ['Colar',()=>navigator.clipboard.readText().then(t=>ed.insert(t)).catch(()=>toast('COLAGEM BLOQUEADA')),1],
+ ['Novo arquivo',()=>{const n=prompt('Nome do arquivo:','novo.html');if(n)newFile(n.trim())}],
+ ['Renomear arquivo',()=>{const n=prompt('Novo nome:',meta(cur).n);if(n&&n.trim())renameFile(cur,n.trim())}],
+ ['Baixar arquivo',async()=>dl(meta(cur).n,ed.getValue()),1],
+ ['Enviar para o COFRE',toCofre,1],['Abrir COFRE',()=>{location.href='cofre.html'}],
+ ['Rodar',run]
+];
+$('#tl').innerHTML=C.map((c,i)=>c[2]?'<button class="sb'+(/COFRE|Rodar/.test(c[0])?' g':'')+'" data-i="'+i+'">'+esc(c[0].toUpperCase())+'</button>':'').join('');
+$('#tl').addEventListener('pointerdown',e=>{if(e.target.closest('[data-i]'))e.preventDefault()});
+$('#tl').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;play('click');C[+b.dataset.i][1]()};
+
+function openPalette(){
+  const r=document.createElement('div');
+  r.innerHTML='<input class="in" id="pq" placeholder="Digite um comando…" autocomplete="off" style="margin-bottom:6px"><div id="pl"></div>';
+  const q=r.querySelector('#pq'),L=r.querySelector('#pl');
+  const draw=()=>{const s=q.value.toLowerCase();L.innerHTML=C.map((c,i)=>[c,i]).filter(([c])=>c[0].toLowerCase().includes(s)).map(([c,i])=>'<button class="cmd" data-i="'+i+'">'+esc(c[0])+'</button>').join('')};
+  draw();q.oninput=draw;
+  r.onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;play('click');closeSheet();const f=C[+b.dataset.i][1];setTimeout(f,150)};
+  openSheet('COMANDOS',r)}
 
 /* barra de símbolos (não fecha o teclado) */
 const SY=[['TAB','T'],['{ }','{'],['( )','('],['[ ]','['],['< >','<>'],['" "','"'],["' '","'"],['` `','``'],[';',';'],[':',':'],['=','='],['=>','=>'],['/','/'],['.','.'],[',',','],['#','#'],['$','$'],['!','!'],['&','&'],['|','|'],['\\','\\'],['←','L'],['→','R'],['↑','U'],['↓','D']];
-$('#sym').innerHTML=SY.map((s,i)=>'<button class="b" data-i="'+i+'">'+esc(s[0])+'</button>').join('');
+$('#sym').innerHTML=SY.map((s,i)=>'<button class="sb" data-i="'+i+'">'+esc(s[0])+'</button>').join('');
 $('#sym').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-i]');if(!b)return;e.preventDefault();
   const x=SY[+b.dataset.i][1];ed.focus();
-  if(x==='T')ed.insert('  ');else if(x==='L')ed.navigateLeft(1);else if(x==='R')ed.navigateRight(1);else if(x==='U')ed.navigateUp(1);else if(x==='D')ed.navigateDown(1);
+  if(x==='T')ed.execCommand('indent');else if(x==='L')ed.navigateLeft(1);else if(x==='R')ed.navigateRight(1);else if(x==='U')ed.navigateUp(1);else if(x==='D')ed.navigateDown(1);
   else if(x==='<>'||x==='``'){ed.insert(x);ed.navigateLeft(1)}else ed.insert(x)});
 
-/* barra de ferramentas */
-$('#tl').addEventListener('pointerdown',e=>{if(e.target.closest('[data-t]'))e.preventDefault()});
-$('#tl').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
-  if(t==='undo')ed.undo();else if(t==='redo')ed.redo();
-  else if(t==='find')ed.execCommand('find');else if(t==='goto')ed.execCommand('gotoline');
-  else if(t==='sel')ed.selectMore(1);else if(t==='cmt')ed.toggleCommentLines();else if(t==='fold')ed.execCommand('toggleFold');
-  else if(t==='wrap')ed.session.setUseWrapMode(!ed.session.getUseWrapMode());
-  else if(t==='a+')ed.setFontSize(Math.min(26,ed.getFontSize()+1));else if(t==='a-')ed.setFontSize(Math.max(9,ed.getFontSize()-1));
-  else if(t==='copy')copy(ed.getSelectedText()||ed.getValue());
-  else if(t==='vault')addVault(ed.getSelectedText()||ed.getValue(),F().n);
-  else if(t==='dl')dl(F().n,ed.getValue())};
+/* dock */
+$('#bf').onclick=()=>{play('click');openExplorer()};
+$('#br').onclick=()=>{play('click');run()};
+$('#bc').onclick=()=>{play('click');openPalette()};
 
-/* executar */
-$('#run').onclick=()=>{const f=F(),x=ext(f.n),c=ed.getValue();let h;
-  if(x==='html'||x==='htm')h=c;
-  else if(x==='js')h='<body style="background:#030a1c;color:#9fe8ff;font:13px monospace;padding:12px"><pre id=o></pre><script>const o=document.getElementById("o"),p=(...a)=>o.textContent+=a.map(x=>typeof x==="object"?JSON.stringify(x):x).join(" ")+"\\n";console.log=p;console.error=p;onerror=m=>p("ERRO: "+m);try{'+c.replace(/<\/script/gi,'<\\/script')+'}catch(e){p("ERRO: "+e.message)}<\/script>';
-  else if(x==='css')h='<style>'+c+'</style><h1>Título</h1><p>Texto de exemplo.</p><button>Botão</button>';
-  else h='<pre style="font:13px monospace;white-space:pre-wrap;padding:12px">'+esc(c)+'</pre>';
-  $('#fr2').srcdoc=h;$('#pvn').textContent=f.n;$('#pv').classList.add('on')};
-$('#pvx').onclick=()=>{$('#pv').classList.remove('on');$('#fr2').srcdoc=''};
-
-/* arquivos */
-function openFile(id){cur=id;ed.setSession(sess(F()));$('#fn').value=F().n;saveSoon();stat();show('ed')}
-function renderFiles(){$('#fls').innerHTML=files.map(f=>'<div class="it cp" data-id="'+f.id+'"><div class="t" data-a="open"><b>'+esc(f.n)+'</b><small>'+(f.id===cur?'aberto · ':'')+val(f).length+' caracteres</small></div><button class="b" data-a="dl">BAIXAR</button><button class="b d" data-a="rm">APAGAR</button></div>').join('')||'<p class="em">Nenhum arquivo.</p>'}
-$('#fls').onclick=e=>{const it=e.target.closest('.it'),a=e.target.closest('[data-a]');if(!it||!a)return;const f=files.find(x=>x.id===it.dataset.id);
-  if(a.dataset.a==='open')openFile(f.id);
-  else if(a.dataset.a==='dl')dl(f.n,val(f));
-  else if(a.dataset.a==='rm'){if(!confirm('Apagar '+f.n+'?'))return;files=files.filter(x=>x!==f);delete SS[f.id];if(!files.length)files.push({id:uid(),n:'novo.txt',c:''});if(cur===f.id){cur=files[0].id;ed.setSession(sess(F()));$('#fn').value=F().n}sv('files',files.map(({id,n,c})=>({id,n,c})));renderFiles()}};
-$('#nw').onclick=()=>{const n=prompt('Nome do arquivo:','novo.html');if(!n)return;const f={id:uid(),n:n.trim(),c:''};files.push(f);openFile(f.id)};
-$('#im').onclick=()=>$('#fi').click();
-$('#fi').onchange=async()=>{for(const f of $('#fi').files)files.push({id:uid(),n:f.name,c:await f.text()});$('#fi').value='';sv('files',files.map(({id,n,c})=>({id,n,c})));renderFiles();toast('Importado')};
-$('#dall').onclick=()=>files.forEach((f,i)=>setTimeout(()=>dl(f.n,val(f)),i*400));
-
-/* ===== COFRE: códigos criptografados (AES-256 + PBKDF2) que só abrem com a sua senha ===== */
-const enc=new TextEncoder(),dec=new TextDecoder();
-const b64=a=>{a=new Uint8Array(a);let s='';for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
-const ub=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-let K=null,items=[],V=ld('vault',null),idle,q='';
-async function derive(pw,salt){const m=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-async function seal(){const iv=crypto.getRandomValues(new Uint8Array(12)),ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},K,enc.encode(JSON.stringify(items)));V={s:V.s,i:b64(iv),d:b64(ct)};sv('vault',V)}
-function touch(){clearTimeout(idle);if(K)idle=setTimeout(lock,120000)}
-function lock(){K=null;items=[];q='';renderV()}
-document.addEventListener('pointerdown',touch);
-document.addEventListener('visibilitychange',()=>{if(!K)return;clearTimeout(idle);if(document.hidden)idle=setTimeout(lock,60000);else touch()});
-const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M6 11h12l2 2v6l-2 2H6l-2-2v-6z"/><path d="M12 15v2"/></svg>';
-function renderV(){const bx=$('#cfb');
-  if(!K){bx.innerHTML='<div class="lk cp" id="lkb">'+LOCK+'<h2>'+(V?'COFRE TRANCADO':'CRIAR COFRE')+'</h2><p>'+(V?'Digite sua senha para ver seus códigos.':'Escolha uma senha. Seus códigos ficam criptografados neste aparelho. Se esquecer a senha, não há como recuperar.')+'</p><input type="password" id="pw" placeholder="Senha" autocomplete="off">'+(V?'':'<input type="password" id="pw2" placeholder="Repita a senha" autocomplete="off">')+'<button class="b g" id="go">'+(V?'DESTRANCAR':'CRIAR COFRE')+'</button>'+(V?'<button class="b d" id="wp">APAGAR COFRE</button>':'')+'</div>';return}
-  const L=items.filter(x=>!q||(x.n+x.c).toLowerCase().includes(q));
-  bx.innerHTML='<div class="row"><button class="b g" id="cps">COLAR DA ÁREA</button><button class="b" id="lkk">TRANCAR</button></div><input type="text" id="qs" placeholder="Buscar no cofre…" value="'+esc(q).replace(/"/g,'&quot;')+'" style="margin-bottom:8px">'+
-  (L.map(x=>'<div class="cl cp" data-id="'+x.id+'"><h4>'+esc(x.n)+'</h4><pre>'+esc(x.c.slice(0,260))+'</pre><div class="row"><button class="b" data-a="cp">COPIAR</button><button class="b g" data-a="ed">ABRIR NO EDITOR</button><button class="b" data-a="rn">RENOMEAR</button><button class="b d" data-a="rm">APAGAR</button></div></div>').join('')||'<p class="em">'+(items.length?'Nada encontrado.':'Cofre vazio. Use → COFRE no editor ou COLAR DA ÁREA.')+'</p>')}
-async function addVault(t,n){if(!K){toast('Destranque o cofre primeiro');show('cf');return}if(!t.trim())return;
-  items.unshift({id:uid(),n:n||t.trim().split('\n')[0].slice(0,32)||'sem título',c:t});await seal();renderV();toast('Guardado no cofre')}
-$('#cfb').onclick=async e=>{const id=e.target.id;
-  if(id==='go'){const pw=$('#pw').value,bx=$('#lkb');
-    try{if(!V){if(pw.length<4)return toast('Mínimo de 4 caracteres');if(pw!==$('#pw2').value)return toast('As senhas não batem');const s=crypto.getRandomValues(new Uint8Array(16));K=await derive(pw,s);V={s:b64(s)};items=[];await seal()}
-      else{K=await derive(pw,ub(V.s));items=JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub(V.i)},K,ub(V.d))))}
-      touch();renderV()}catch(x){K=null;bx.classList.remove('sh');void bx.offsetWidth;bx.classList.add('sh');toast('Senha errada')}return}
-  if(id==='wp'){if(confirm('Apagar o cofre e TODOS os códigos dele? Isso não tem volta.')){localStorage.removeItem('js_vault');V=null;renderV()}return}
-  if(id==='lkk'){lock();return}
-  if(id==='cps'){try{addVault(await navigator.clipboard.readText())}catch(x){const t=prompt('O navegador bloqueou a leitura. Cole aqui:');if(t)addVault(t)}return}
-  const a=e.target.closest('[data-a]'),it=e.target.closest('.cl');if(!a||!it)return;const x=items.find(i=>i.id===it.dataset.id);
-  if(a.dataset.a==='cp')copy(x.c);
-  else if(a.dataset.a==='ed'){const f={id:uid(),n:x.n.includes('.')?x.n:x.n+'.txt',c:x.c};files.push(f);openFile(f.id)}
-  else if(a.dataset.a==='rn'){const n=prompt('Novo nome:',x.n);if(n){x.n=n;await seal();renderV()}}
-  else if(a.dataset.a==='rm'){if(confirm('Apagar do cofre?')){items=items.filter(i=>i!==x);await seal();renderV()}}};
-$('#cfb').oninput=e=>{if(e.target.id==='qs'){q=e.target.value.toLowerCase();const p=e.target.selectionStart;renderV();const n=$('#qs');n.focus();n.setSelectionRange(p,p)}};
-$('#cfb').onkeydown=e=>{if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('pw'))$('#go').click()};
-
-/* abas */
-function show(k){document.querySelectorAll('.v').forEach(v=>v.classList.toggle('on',v.id==='v-'+k));document.querySelectorAll('nav .b').forEach(b=>b.classList.toggle('on',b.dataset.v===k));
-  if(k==='fl')renderFiles();if(k==='cf')renderV();if(k==='ed'){ed.resize();stat()}}
-document.querySelector('nav').onclick=e=>{const b=e.target.closest('[data-v]');if(b)show(b.dataset.v)};
-addEventListener('message',e=>{if(e.data==='cofre')show('cf')});
-if(ld('goto',null)==='cofre'){sv('goto',null);show('cf')}
-stat();
+/* ===== INICIAR ===== */
+(async function boot(){
+  try{list=await dbGet('m','list');
+    if(!list){const old=ld('files',null);list=[];
+      if(old&&old.length){for(const f of old){await dbPut('f',f.id,f.c);list.push({id:f.id,n:f.n,len:f.c.length})}}
+      else{const id=uid();await dbPut('f',id,SAMPLE);list=[{id,n:'bem-vindo.html',len:SAMPLE.length}]}
+      await dbPut('m','list',list)}
+    const ui=ld('ui',null)||{cur:ld('cur',null)};
+    open=(ui.open||[]).filter(meta);if(!open.length)open=[meta(ui.cur)?ui.cur:list[0].id];
+    await activate(open.includes(ui.cur)?ui.cur:open[0]);
+    loadSounds();setTimeout(()=>{const s=document.querySelector('.jscan');if(s)s.remove()},2000)
+  }catch(e){toast('ERRO AO ABRIR O ARMAZENAMENTO')}
+})();
 </script>
 </body>
 </html>
