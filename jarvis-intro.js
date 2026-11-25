@@ -82,7 +82,7 @@ function draw(ts){
     gr.addColorStop(0,'rgba('+col+','+(.12+.16*a)+')');gr.addColorStop(.5,'rgba('+col+','+.05*a+')');gr.addColorStop(1,'rgba('+col+',0)');g.fillStyle=gr;g.fillRect(CX-R,CY-R,2*R,2*R)}
   bRot+=dt*(t<3?3.2:1.2);
   if(t>1.2){const a=pg(t,1.2,.9);drawSphere(g,CX,CY,R*.3*(.5+.5*e3(a)),bRot,.35,a,0,col)}
-  if(t>1.4){const p=pg(t,1.4,.8);g.lineWidth=1.3;g.strokeStyle='rgba('+col+','+.85*p+')';g.setLineDash([R*.5,R*.08,R*.1,R*.08]);g.lineDashOffset=-t*R*.2;g.beginPath();g.arc(CX,CY,R*.47,0,TAU);g.stroke();g.setLineDash([])}
+  if(t>1.4){const p=pg(t,1.4,.8);g.lineWidth=1.3;g.strokeStyle='rgba('+col+','+.85*p+')';g.setLineDash([R*.5,R*.08,R*.1,R*.08]);g.lineDashOffset=-t*R*.2;g.beginPath();g.arc(CX,CY,R*.47,0,TAU);g.stroke();g.setLineDash([]);g.lineDashOffset=0}
   if(t>1.6){g.lineWidth=R*.035;
     [[0,.8],[1,1.9],[2.2,2.5],[2.8,4.2],[4.5,5.4],[5.6,6.1]].forEach((s,i)=>{const p=pg(t,1.6+i*.12,.4);if(p<=0)return;g.strokeStyle='rgba('+col+','+(i%2?.9:.5)*p+')';g.beginPath();g.arc(CX,CY,R*.58,-t*.35+s[0],-t*.35+s[1]);g.stroke()})}
   if(t>2){const a=pg(t,2,.6),r3=R*.69;g.lineWidth=1;g.strokeStyle='rgba('+col+','+.7*a+')';g.beginPath();
@@ -135,9 +135,12 @@ function draw(ts){
   /* ---------- 7. CLÍMAX: glitch, clarão e boas-vindas ---------- */
   if(t>4&&t<4.35){g.fillStyle='rgba('+B+','+.22*(1-(t-4)/.35)+')';for(let i=0;i<6;i++)g.fillRect(0,Math.random()*H,W,2+Math.random()*5);
     const a=.3*(1-(t-4)/.35),gr=g.createRadialGradient(CX,CY,0,CX,CY,Math.max(W,H)*.6);gr.addColorStop(0,'rgba(255,255,255,'+a+')');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
-  if(t>4.1){const a=cl((t-4.1)*3)*(1-pg(t,5,.3)),w=pg(t,4.2,.7)*W*.26;
-    txt('BEM-VINDO, SENHOR',CX,ty+34,Math.min(15,W*.04),.3,a,B,900);
-    g.fillStyle='rgba('+B+','+.7*a+')';g.fillRect(CX-w-6-Math.min(15,W*.04)*3.3,ty+29,w,1);g.fillRect(CX+6+Math.min(15,W*.04)*3.3,ty+29,w,1)}
+  if(t>4.1){const a=cl((t-4.1)*3)*(1-pg(t,5,.3)),wf=Math.min(15,W*.04);
+    g.font='900 '+wf+'px Orbitron,system-ui,sans-serif';try{g.letterSpacing=wf*.3+'px'}catch(e){}
+    const hw=g.measureText('BEM-VINDO, SENHOR').width/2;try{g.letterSpacing='0px'}catch(e){}
+    const w=pg(t,4.2,.7)*Math.max(0,Math.min(W*.2,CX-hw-34)),ly=ty+34-wf*.35;
+    txt('BEM-VINDO, SENHOR',CX,ty+34,wf,.3,a,B,900);
+    g.fillStyle='rgba('+B+','+.7*a+')';g.fillRect(CX-hw-14-w,ly,w,1);g.fillRect(CX+hw+14,ly,w,1)}
   if(t>4.1&&!said){said=true;const h=new Date().getHours();speak((h<5?'Boa madrugada':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+', senhor. Todos os sistemas estão operacionais. Em que posso ajudá-lo?')}
 
   /* ---------- 8. ONDAS DE CHOQUE ---------- */
