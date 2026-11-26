@@ -26,7 +26,11 @@
     let tm = [], auds = [], played = new Set();
 
     // chamado pela abertura (jarvis-intro.js) quando o usuário toca em INICIAR
+    let startedAt = 0;
     window.jaOpenStart = function () {
+      const now = performance.now();
+      if (now - startedAt < 500) return; // evita agendar duas vezes
+      startedAt = now;
       tm.forEach(clearTimeout); tm = []; auds = []; played.clear();
       OP.forEach(([k, , , t]) => tm.push(setTimeout(() => {
         played.add(k); const a = play(k); if (a) auds.push(a);
@@ -38,6 +42,26 @@
       tm.forEach(clearTimeout); tm = [];
       auds.forEach(a => { try { a.pause(); } catch (e) {} }); auds = [];
       if (!played.has('boot_e')) { played.add('boot_e'); const a = play('boot_e'); if (a) auds.push(a); }
+    };
+
+    /* >>> FUNCIONA COM QUALQUER ABERTURA NO AR: todas chamam play('boot') ao tocar em INICIAR */
+    const _play = play;
+    play = function (k, o) {
+      if (k === 'boot' && !(o && o.force)) { try { window.jaOpenStart(); } catch (e) {} }
+      return _play.apply(this, arguments);
+    };
+
+    /* toque durante a abertura = pular (para os sons e toca só o de boas-vindas) */
+    document.addEventListener('pointerdown', () => {
+      const d = performance.now() - startedAt;
+      if (startedAt && d > 600 && d < 5300) { startedAt = 0; try { window.jaOpenSkip(); } catch (e) {} }
+    }, true);
+
+    /* >>> A voz da abertura SEMPRE diz só "Bem-vindo, senhor." (qualquer abertura) */
+    const _speak = speak;
+    speak = function (t) {
+      if (typeof t === 'string' && /Todos os sistemas estão operacionais/.test(t)) t = 'Bem-vindo, senhor.';
+      return _speak.call(this, t);
     };
   } catch (e) { console.warn('jarvis-extra (abertura): não aplicado', e); }
 })();
