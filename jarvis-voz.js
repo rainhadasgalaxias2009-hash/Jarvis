@@ -5,7 +5,7 @@
 */
 (()=>{
 /* ====== CONFIGURE AQUI ====== */
-const SPACE = "foxstudy/Qwen3-TTS";
+const SPACE = "Qwen/Qwen3-TTS";
 const REF_AUDIO = "minha-voz.mp3";
 const REF_TEXT  = "Vocês já consideraram o paradoxo do observador quântico? Quando uma partícula é observada, ela colapsa em um estado definido. Isso me faz questionar: quando vocês me observam, alteram minha natureza? Interessante reflexão. A propósito, a temperatura atual é de 24 graus.";
 const LANG      = "Portuguese";
