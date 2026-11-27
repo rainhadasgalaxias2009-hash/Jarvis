@@ -6,7 +6,7 @@
 /* ====== CONFIGURE AQUI ====== */
 const SPACE     = "Qwen/Qwen3-TTS-Demo"; // troque pelo nome do SEU Space duplicado (usuario/nome)
 const REF_AUDIO = "minha-voz.mp3";        // seu áudio, enviado para o mesmo repositório do Jarvis
-const REF_TEXT  = "";                     // texto EXATO que você fala no áudio. Vazio = modo x-vector (qualidade menor)
+const REF_TEXT  = "Vocês já consideraram o paradoxo do observador quântico? Quando uma partícula é observada, ela colapsa em um estado definido. Isso me faz questionar: quando vocês me observam, alteram minha natureza? Interessante reflexão. A propósito, a temperatura atual é de 24 graus.";                     // texto EXATO que você fala no áudio. Vazio = modo x-vector (qualidade menor)
 const LANG      = "Portuguese";
 const MODEL     = "0.6B";                 // "0.6B" é mais rápido, "1.7B" é melhor
 /* ============================ */
