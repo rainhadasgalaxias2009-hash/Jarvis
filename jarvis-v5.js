@@ -1,511 +1,445 @@
-/* J.A.R.V.I.S V5 (revisado) — carregue POR ÚLTIMO no index.html (depois do jarvis-extra.js e do jarvis-fix2.js):
-   <script src="jarvis-v5.js"></script>
-   Substitui o jarvis-v5.js antigo. Inclui tudo que o v5 já tinha + os ajustes novos (seções 12 a 20).      */
+/* =====================================================================
+   J.A.R.V.I.S V6 — carregue POR ÚLTIMO no index.html:
+   <script src="jarvis-v6.js?v=6"></script>
+   Tudo desta versão está neste arquivo (sem depender de funções novas
+   de outros scripts). Ele assume o controle do que precisa mudar.
+   ===================================================================== */
 (()=>{
-const S=q=>document.querySelector(q);
-const pad=n=>String(n).padStart(2,'0');
-const WN={um:1,uma:1,dois:2,duas:2,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10};
-const N=x=>/^\d+$/.test(x)?+x:(WN[x]===undefined?NaN:WN[x]);
-const MES={janeiro:0,fevereiro:1,marco:2,abril:3,maio:4,junho:5,julho:6,agosto:7,setembro:8,outubro:9,novembro:10,dezembro:11};
-const stash=()=>sv('tasks',tasks), stashM=()=>sv('mem',mem);
+const S=(n,f)=>{try{f()}catch(e){console.warn('jarvis-v6 ['+n+']',e)}};
+const TAU=Math.PI*2;
+const ico=(p,w)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(w||1.7)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
 
-/* ================= TAREFAS E MEMÓRIA (controle total) ================= */
-const pend=()=>tasks.filter(x=>!x.ok);
-function findTask(q,done){q=norm(q).replace(/^(?:a |o |numero |n )/,'').trim();const n=N(q),base=done?tasks.filter(x=>x.ok):pend();
-  if(!isNaN(n))return base[n-1];return base.find(x=>norm(x.t).includes(q))||tasks.find(x=>norm(x.t).includes(q))}
-function findMem(q){q=norm(q).replace(/^(?:a |o |numero )/,'').trim();const n=N(q);if(!isNaN(n))return mem[n-1];return mem.find(x=>norm(x.t).includes(q))}
-const delTask=t=>{tasks=tasks.filter(x=>x!==t);stash()};
-const delMem=t=>{mem=mem.filter(x=>x!==t);stashM()};
+/* ---------- ÍCONES (tudo por código, nenhum emoji) ---------- */
+const IC={
+clima:'<circle cx="8.5" cy="8.5" r="3"/><path d="M8.5 2v1.8M2 8.5h1.8M3.9 3.9l1.3 1.3M13.1 3.9l-1.3 1.3"/><path d="M8 20h9.2a3.6 3.6 0 0 0 .3-7.2 5.2 5.2 0 0 0-9.8 1.4A3 3 0 0 0 8 20z"/>',
+tarefas:'<path d="M4 6.5l1.8 1.8L9 5M4 13.5l1.8 1.8L9 12M12 7h8M12 14h8M5 20h15"/>',
+txt:'<path d="M6 6h12l3 3v6l-3 3H6l-3-3V9z"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/>',
+mem:'<path d="M12 3l7.5 4.2v5.6c0 3.8-3.2 6.7-7.5 8.2-4.3-1.5-7.5-4.4-7.5-8.2V7.2z"/><path d="M9 11h6M9 14.5h4"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+send:'<path d="M3 12L21 4l-6 16-3.2-6.8z"/>',
+code:'<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>',
+lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3M12 15v2"/>',
+mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',
+back:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+clip:'<rect x="6" y="5" width="12" height="16" rx="1.5"/><path d="M9 5V3h6v2M9 11h6M9 15h4"/>',
+search:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
+play:'<path d="M7 5l12 7-12 7z"/>',
+folder:'<path d="M3 7l2-2h5l2 2h7l2 2v8l-2 2H5l-2-2z"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+cs:'<circle cx="16.5" cy="7" r="2.8"/><path d="M16.5 1.5v1.2M21.5 7h-1.2M20 3.5l-.8.8"/><path d="M7 20h9a3.5 3.5 0 0 0 .3-7 5 5 0 0 0-9.5 1.3A3 3 0 0 0 7 20z"/>',
+cloud:'<path d="M7 19h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.4 3.4 0 0 0 7 19z"/>',
+fog:'<path d="M4 8h16M3 12h18M5 16h14M8 20h8"/>',
+rain:'<path d="M7 15h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.4 3.4 0 0 0 7 15z"/><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/>',
+snow:'<path d="M12 3v18M4.5 7.5l15 9M4.5 16.5l15-9"/>',
+storm:'<path d="M7 14h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.4 3.4 0 0 0 7 14z"/><path d="M12 14l-2 4h3l-2 4"/>'};
+const WM={'☀':'sun','⛅':'cs','☁':'cloud','🌫':'fog','🌦':'rain','🌧':'rain','❄':'snow','⛈':'storm'};
+const hex3d=()=>'<span class="h3"><span class="p">'+[0,1,2,3,4,5].map(i=>'<u class="f" style="transform:rotateY('+i*60+'deg) translateZ(8.66px)"></u>').join('')+'<u class="t"></u><u class="b"></u></span></span>';
+const root=document.documentElement;
+const normP=p=>String(p).replace(/index\.html?$/i,'').replace(/\/+$/,'');
+const samePath=p=>normP(p)===normP(location.pathname);
 
-/* ================= TELA PRETA / BRILHO / WAKE LOCK ================= */
-let blk=null,wantWL=false,dimLvl=0;
-async function keepAwake(on){wantWL=on;try{if(on){if(!wl&&navigator.wakeLock)wl=await navigator.wakeLock.request('screen')}else{if(wl)await wl.release();wl=null}}catch(e){}}
-function telaPreta(on){
-  if(on){if(blk)return;blk=document.createElement('div');
-    blk.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:flex-end;justify-content:center;padding-bottom:44px;color:#0b3a52;font:10px Orbitron,sans-serif;letter-spacing:.3em;touch-action:manipulation';
-    blk.textContent='TOQUE DUAS VEZES PARA ACORDAR';setTimeout(()=>{if(blk)blk.textContent=''},4000);
-    let last=0;blk.addEventListener('pointerdown',()=>{const n=Date.now();if(n-last<450)telaPreta(false);last=n});
-    document.body.appendChild(blk);keepAwake(true)}
-  else if(blk){blk.remove();blk=null;play('ok')}}
-const dimEl=document.createElement('div');dimEl.style.cssText='position:fixed;inset:0;z-index:9998;background:#000;opacity:0;pointer-events:none;transition:opacity .3s';document.body.appendChild(dimEl);
-function dim(v){dimLvl=Math.max(0,Math.min(3,v));dimEl.style.opacity=[0,.3,.55,.78][dimLvl]}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)return;
-  if(wantWL||blk){wl=null;keepAwake(true)}
-  if(contOn&&!listening&&!speaking&&!recOn)setTimeout(()=>{try{listen()}catch(e){}},500)});
+/* ---------- CSS ---------- */
+const HEX_CSS=
+'.h3{display:inline-block;position:relative;width:24px;height:26px;perspective:140px;flex:none;filter:drop-shadow(0 0 5px rgba(var(--acr),.9))}'+
+'.h3 .p{position:absolute;left:12px;top:13px;width:0;height:0;transform-style:preserve-3d;animation:h3r 7s linear infinite}'+
+'.h3 u{position:absolute;display:block;text-decoration:none;box-sizing:border-box}'+
+'.h3 .f{width:10px;height:14px;left:-5px;top:-7px;border:1px solid var(--ac);background:linear-gradient(rgba(var(--acr),.65),rgba(var(--acr),.1))}'+
+'.h3 .t,.h3 .b{width:20px;height:17.32px;left:-10px;top:-8.66px;background:rgba(var(--ac2r),.5);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}'+
+'.h3 .t{transform:translateY(-7px) rotateX(90deg)}.h3 .b{transform:translateY(7px) rotateX(90deg)}'+
+'@keyframes h3r{from{transform:rotateX(-26deg) rotateY(0)}to{transform:rotateX(-26deg) rotateY(360deg)}}';
+const IF_CSS=HEX_CSS+
+'.hx b{display:flex}.hx b svg{width:1.15em;height:1.15em;display:block}'+
+'.ic{border:0;background:none;color:var(--ac);width:42px;height:42px;display:flex;align-items:center;justify-content:center;padding:0;flex:none;cursor:pointer}'+
+'.ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(var(--acr),.8))}'+
+'.ic:active{background:rgba(var(--acr),.35);color:var(--ac2)}';
 
-/* ================= LANTERNA ================= */
-let torch=null;
-async function lanterna(on){
-  try{if(!on){if(torch){torch.getTracks().forEach(t=>t.stop());torch=null}return true}
-    if(torch)return true;
-    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
-    const tr=st.getVideoTracks()[0],cap=tr.getCapabilities?tr.getCapabilities():{};
-    if(!cap.torch){st.getTracks().forEach(t=>t.stop());return false}
-    await tr.applyConstraints({advanced:[{torch:true}]});torch=st;return true}catch(e){return false}}
+const st=document.createElement('style');
+st.textContent=HEX_CSS+`
+.hx b{display:flex}.hx b svg{width:1.15em;height:1.15em;display:block}
+.logo i{display:none}
+#hud{display:none!important}
+#hud6{position:relative;z-index:5;flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;padding:0 18px;margin-top:-2px;font:10px var(--mono);letter-spacing:.14em;color:var(--mut)}
+#hud6 .hl{display:flex;flex-direction:column;gap:6px}
+#hud6 .hl span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#hud6 .dt{width:6px;height:6px;border-radius:50%;background:var(--ac2);box-shadow:0 0 8px var(--ac2);animation:bk 1.6s infinite}
+#hud6 #hc{color:var(--ac);font:400 11px var(--mono);text-shadow:0 0 8px var(--ac)}
+#bat6 svg{width:22px;height:11px;color:var(--ac);flex:none}
+#bat6.low svg{color:#ff6b6b}
+#tms{top:calc(env(safe-area-inset-top) + 132px)!important}
+#dock{gap:4px}
+#dock .hx:nth-child(1),#dock .hx:nth-child(6){margin-top:22px}
+#dock .hx:nth-child(2),#dock .hx:nth-child(5){margin-top:11px}
+#dock .hx:nth-child(3){margin-top:-2px}
+#dock .hx:nth-child(4){margin-top:2px}
+@media(max-width:410px){#dock .hx{width:52px;height:60px}#dock .hx.big{width:62px;height:70px}}
+#dock .hx.sp{color:var(--ac2);background:var(--ac2)}
+/* gravação de voz (ocupa o lugar do dock, nunca cobre o texto do Jarvis) */
+#vp{display:none;position:relative;z-index:6;flex:none;margin:2px 12px 10px;background:rgba(var(--acr),.55);clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);animation:vpin .22s ease-out}
+#vp::before{content:"";position:absolute;inset:1px;background:linear-gradient(135deg,rgba(var(--acr),.18),rgba(var(--acr),.04) 50%),#020b14;clip-path:inherit}
+#vp>*{position:relative}
+body.vp #vp{display:block}
+body.vp #dock,body.vp #tb{display:none!important}
+@keyframes vpin{from{opacity:0;transform:translateY(18px)}}
+#vp .vh{display:flex;align-items:center;gap:8px;padding:11px 14px 0;font:700 10px var(--hud);letter-spacing:.18em;color:var(--ac)}
+#vp .vd{width:8px;height:8px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 10px #ff4d5e;animation:bk 1s infinite;flex:none}
+body.vpp #vp .vd{animation:none;background:var(--mut);box-shadow:none}
+#vp .vk{margin-left:auto;font:11px var(--mono);color:var(--ac2);letter-spacing:.1em}
+#vw{display:block;width:calc(100% - 28px);height:38px;margin:6px 14px 0}
+#vt{display:block;width:calc(100% - 28px);margin:8px 14px 0;border:0;outline:0;resize:none;background:rgba(var(--acr),.1);color:var(--fg);font:16px/1.4 system-ui,sans-serif;padding:11px 14px;min-height:46px;max-height:22dvh;caret-color:var(--ac);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);box-shadow:inset 0 -1px 0 rgba(var(--acr),.5)}
+#vt::placeholder{color:var(--mut)}
+#vp .vb{display:flex;align-items:center;gap:10px;padding:10px 14px 14px}
+#vp .vb .hx{width:44px;height:50px}
+#vm.on{color:var(--ac2);background:var(--ac2)}
+#vsend{flex:1;height:48px;border:0;color:#001;font:900 12px var(--hud);letter-spacing:.2em;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(90deg,var(--ac2),var(--ac));clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+#vsend svg{width:18px;height:18px}
+#vsend:active{filter:brightness(1.3)}
+.shk{animation:shk .3s}@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* studio / cofre como camadas do próprio Jarvis */
+#v6ov{position:fixed;inset:0;z-index:100;pointer-events:none}
+#v6ov.on{pointer-events:auto}
+#v6ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000308;visibility:hidden;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .16s ease-out,transform .16s ease-out,visibility 0s linear .16s}
+#v6ov iframe.on{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .16s ease-out,transform .16s ease-out,visibility 0s}
+body.v6-open>*:not(#v6ov){visibility:hidden!important}
+body.v6-open *{animation-play-state:paused!important}
+`;
+document.head.appendChild(st);
 
-/* ================= ALARME DO ANDROID / LEMBRETE POR HORÁRIO ================= */
-function alarme(h,mi,msg){
-  if(!AND){addTimer(Math.max(1,Math.round(((()=>{const d=new Date();d.setHours(h,mi,0,0);if(d<=Date.now())d.setDate(d.getDate()+1);return d-Date.now()})())/1000)),msg||'Alarme',true);return false}
-  launch('intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR='+h+';i.android.intent.extra.alarm.MINUTES='+mi+';S.android.intent.extra.alarm.MESSAGE='+encodeURIComponent(msg||'Jarvis')+';B.android.intent.extra.alarm.SKIP_UI=true;end','alarme '+pad(h)+':'+pad(mi));return true}
-function lembrarHora(label,h,mi){const d=new Date();d.setHours(h,mi||0,0,0);if(d<=Date.now())d.setDate(d.getDate()+1);
-  addTimer(Math.round((d-Date.now())/1000),label,true);play('ok');
-  return say('Combinado, senhor. Avisarei sobre '+label+' às '+pad(h)+':'+pad(mi||0)+'.')}
+/* =====================================================================
+   1) MOTOR DE SOM — tudo por Web Audio (sem player do Chrome),
+      corta o silêncio do começo dos arquivos, compartilhado com Studio/Cofre
+   ===================================================================== */
+let lastPlay=0,bootT0=0,bootTm=[],bootSrc=[],skipAt=0,fFired=false;
+S('som',()=>{
+  [['close','Fechar / voltar (X e setas)','Sci fi close'],
+   ['studio','Abrir Studio','Sci fi interface zoom'],
+   ['cofre','Abrir Cofre','Sci fi lock'],
+   ['stop','Parar de gravar','Sci fi power down'],
+   ['toggle','Interruptores e cores','Sci fi switch']].forEach(a=>{if(!SLOTS.some(s=>s[0]===a[0]))SLOTS.push(a)});
+  Object.assign(FB,{
+    close:()=>bp(1800,700,.07,.05),
+    studio:()=>bp(300,1400,.2,.06,'triangle'),
+    cofre:()=>{bp(900,0,.08,.06);setTimeout(()=>bp(500,0,.12,.06),70)},
+    stop:()=>bp(1400,500,.12,.06),
+    toggle:()=>bp(1200,1800,.06,.05),
+    boot_f:()=>bp(200,2600,.5,.06,'triangle')});
 
-/* ================= CRONÔMETRO ================= */
-let cr=null;
-const durTxt=ms=>{const s=Math.round(ms/1000),m=Math.floor(s/60),r=s%60;return(m?m+' minuto'+(m>1?'s':'')+' e ':'')+r+' segundo'+(r!==1?'s':'')};
-function cron(a){
-  if(a==='iniciar'){cr=Date.now();play('ok');return say('Cronômetro iniciado, senhor.')}
-  if(!cr)return say('O cronômetro não está rodando, senhor.');
-  const ms=Date.now()-cr;if(a==='parar'){cr=null;return say('Cronômetro parado em '+durTxt(ms)+', senhor.')}
-  return say('Já se passaram '+durTxt(ms)+', senhor.')}
+  /* decodifica uma vez e corta o silêncio inicial */
+  const BC=new Map();
+  function getBuf(u,trim){
+    const key=u+(trim?'|t':'|n');
+    if(!BC.has(key))BC.set(key,(async()=>{
+      const x=ax();if(!x)throw 0;
+      const buf=await x.decodeAudioData(await(await fetch(u)).arrayBuffer());
+      let off=0;
+      if(trim){let first=buf.length;
+        for(let c=0;c<buf.numberOfChannels;c++){const d=buf.getChannelData(c);for(let i=0;i<first;i++){if(d[i]>.015||d[i]<-.015){first=i;break}}}
+        if(first<buf.length)off=Math.min(1.5,Math.max(0,first/buf.sampleRate-.005))}
+      return{buf,off}})().catch(e=>{BC.delete(key);throw e}));
+    return BC.get(key)}
+  const prime=()=>{SLOTS.forEach(s=>{const u=SU[s[0]];if(u)getBuf(u,s[0]!=='amb').catch(()=>{})})};
+  loadSounds().then(prime).catch(()=>{});
+  [2500,6000].forEach(ms=>setTimeout(()=>{loadSounds().then(prime).catch(()=>{})},ms));
 
-/* ================= INFORMAÇÕES DO APARELHO ================= */
-async function bateria(){try{const b=await navigator.getBattery();return say('A bateria está em '+Math.round(b.level*100)+' por cento'+(b.charging?', carregando':'')+', senhor.')}catch(e){return say('Seu navegador não me informa a bateria, senhor.')}}
-function rede(){const c=navigator.connection||{};return say(navigator.onLine?'O senhor está online'+(c.effectiveType?', conexão '+c.effectiveType.toUpperCase():'')+(c.downlink?', cerca de '+c.downlink+' megabits':'')+'.':'O senhor está sem internet no momento.')}
-function aparelho(){const r=document.createElement('div');
-  const L=[['TELA',screen.width+' × '+screen.height],['PIXEL RATIO',devicePixelRatio],['NÚCLEOS',navigator.hardwareConcurrency||'?'],['MEMÓRIA',(navigator.deviceMemory||'?')+' GB'],['IDIOMA',navigator.language],['ONLINE',navigator.onLine?'sim':'não'],['SISTEMA',AND?'Android':IOS?'iOS':'Desktop']];
-  r.innerHTML=L.map(x=>'<div class="rw"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('');openSheet('APARELHO',r);return say('Aqui estão as informações do aparelho, senhor.')}
-const pos=()=>new Promise((ok,no)=>navigator.geolocation.getCurrentPosition(ok,no,{timeout:10000,maximumAge:60000,enableHighAccuracy:true}));
-async function onde(share){try{const p=await pos(),a=p.coords.latitude,b=p.coords.longitude;let end='';
-  try{const j=await(await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=pt-BR&lat='+a+'&lon='+b)).json();end=j.display_name||''}catch(e){}
-  const link='https://maps.google.com/?q='+a+','+b;
-  if(share){try{await navigator.share({title:'Minha localização',text:end,url:link});return say('Localização enviada, senhor.')}catch(e){try{await navigator.clipboard.writeText(link)}catch(x){}return say('Copiei o link da sua localização, senhor.')}}
-  return say(end?'O senhor está em '+end.split(',').slice(0,4).join(',')+'.':'Suas coordenadas são '+a.toFixed(4)+' e '+b.toFixed(4)+', senhor.')}
-  catch(e){play('err');return say('Não consegui sua localização, senhor. Verifique a permissão.')}}
+  window.play=function(k,o){
+    o=o||{};lastPlay=performance.now();
+    if(k==='boot'&&!o.force)startBoot();
+    if(!fxOn&&!o.force)return;
+    const u=SU[k];
+    if(u){
+      const h={key:k,dead:false,node:null,stop(){this.dead=true;try{this.node&&this.node.stop()}catch(e){}},pause(){this.stop()}};
+      getBuf(u,true).then(r=>{
+        if(h.dead)return;const x=ax();if(!x)return;
+        const s=x.createBufferSource(),g=x.createGain();
+        s.buffer=r.buf;g.gain.value=Math.min(1,vol*(o.v||1));s.connect(g);g.connect(x.destination);s.start(0,r.off);h.node=s;
+      }).catch(()=>{if(!h.dead&&FB[k]){try{FB[k]()}catch(e){}}});
+      if(/^boot/.test(k))bootSrc.push(h);
+      return h}
+    if(FB[k]){try{FB[k]()}catch(e){}}};
 
-/* ================= VOZ (velocidade e tom) ================= */
-let RATE=ld('rate',.93),PITCH=ld('pitch',.6);
-try{if('speechSynthesis' in window){const _sp=speechSynthesis.speak.bind(speechSynthesis);speechSynthesis.speak=function(u){try{u.rate=RATE;u.pitch=PITCH}catch(e){}return _sp(u)}}}catch(e){}
-function voz(k){
-  if(/devagar|lent/.test(k))RATE=Math.max(.6,RATE-.1);
-  else if(/rapid|veloz/.test(k))RATE=Math.min(1.5,RATE+.1);
-  else if(/grave/.test(k))PITCH=Math.max(.1,PITCH-.15);
-  else if(/agud/.test(k))PITCH=Math.min(1.8,PITCH+.15);
-  else{RATE=.93;PITCH=.6}
-  sv('rate',RATE);sv('pitch',PITCH);return say('Ajuste de voz aplicado, senhor.')}
+  /* ---- ambiente: toca pelo site (Web Audio), não pelo player do Chrome, e é lembrado ---- */
+  const A0=window.ambient;let ambSrc=null,ambG=null,ambTok=0;
+  window.ambient=function(on){
+    ambTok++;if(ambSrc){try{ambSrc.stop()}catch(e){}ambSrc=null}ambG=null;
+    if(on&&SU.amb){
+      A0(false);ambOn=true;sv('amb',true);const tok=ambTok;
+      getBuf(SU.amb,false).then(r=>{if(tok!==ambTok)return;const x=ax();if(!x)return;
+        const s=x.createBufferSource(),g=x.createGain();s.buffer=r.buf;s.loop=true;g.gain.value=vol*.5;s.connect(g);g.connect(x.destination);s.start(0);ambSrc=s;ambG=g}).catch(()=>{});
+    }else{A0(on);sv('amb',!!on)}};
+  setInterval(()=>{if(ambG)ambG.gain.value=vol*.5},400);
 
-/* ================= BACKUP ================= */
-function exportar(){const d={tarefas:tasks,memoria:mem,conversa:chat,tema:curTheme,data:new Date().toISOString()};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));
-  a.download='jarvis-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()}
+  /* ---- abertura: cada som no seu momento; pular cancela todos menos o último (abre a interface) ---- */
+  const BT={boot_a:.15,boot_b:1.7,boot_t:1.9,boot_d:2.2,boot_c:2.6,boot_e:4.1,boot_f:5.3};
+  window.startBoot=function(){
+    const n=performance.now();if(n-bootT0<800)return;
+    bootT0=n;skipAt=0;fFired=false;clearBoot();
+    Object.entries(BT).forEach(([k,t])=>bootTm.push(setTimeout(()=>{if(k==='boot_f')fFired=true;play(k)},t*1000)));
+    if(ld('amb',false)&&!ambOn)setTimeout(()=>window.ambient(true),60)};
+  function clearBoot(){bootTm.forEach(clearTimeout);bootTm=[]}
+  function skipBoot(){
+    skipAt=performance.now();clearBoot();
+    bootSrc=bootSrc.filter(h=>{if(h.key==='boot_f')return true;h.stop();return false});
+    try{speechSynthesis.cancel()}catch(e){}
+    if(!fFired){fFired=true;play('boot_f')}}
+  window.jaOpenStart=window.startBoot;window.jaOpenSkip=skipBoot;
+  document.addEventListener('pointerdown',()=>{const d=(performance.now()-bootT0)/1000;if(bootT0&&!skipAt&&d>.35&&d<5.9)skipBoot()},true);
+  const sp0=window.speak;
+  window.speak=function(t){
+    if(skipAt&&performance.now()-skipAt<5000&&typeof t==='string'&&/^(Bem-vindo|Boa madrugada|Bom dia|Boa tarde|Boa noite)/.test(t))return Promise.resolve();
+    return sp0.apply(this,arguments)};
 
-/* ================= AJUDA ================= */
-const HELP=[
-['TAREFAS',['nova tarefa …','apagar tarefa 2  /  apagar tarefa comprar pão','concluir tarefa 1  /  desmarcar tarefa 1','editar tarefa 1 para …','limpar tarefas concluídas  /  limpar tarefas']],
-['MEMÓRIA',['lembre que …','esquecer registro 2  /  esquecer que …','limpar memória']],
-['TEMPO',['timer de 10 minutos','me lembre de X em 10 minutos','me lembre de X às 15:30','alarme às 7:30  (alarme real do Android)','iniciar / parar / quanto tempo cronômetro','quantos dias faltam para o natal']],
-['CELULAR',['lanterna ligar / desligar','tela preta  (some a tela, microfone segue)','acordar tela  /  manter tela ligada','diminuir / aumentar brilho (visual)','volume do celular  (abre as configurações)','vibrar  /  bateria  /  internet  /  aparelho','onde estou  /  compartilhar localização','abrir WhatsApp, Instagram, YouTube …']],
-['TEXTO',['copiar …  /  o que eu copiei','compartilhar …','exportar dados  (backup)']],
-['JARVIS',['toque no reator para gravar, toque de novo para parar, depois ENVIAR','fale mais devagar / rápido','voz mais grave / aguda / normal','repita','modo contínuo ligar / desligar','modo cinema  /  tema aleatório','rolar dado d20  /  cara ou coroa']]];
-function ajuda(){const r=document.createElement('div');
-  r.innerHTML=HELP.map(([h,l])=>'<div class="sh2">'+h+'</div>'+l.map(x=>'<div class="rw" style="font-size:12px">'+esc(x)+'</div>').join('')).join('');openSheet('COMANDOS',r)}
+  /* ---- som em TODOS os botões (configurável em Configurações → Sons) ---- */
+  const A_SEL='button,.hx,a.sb,.tab,.cmd,.sw,.td,.rb,.tm,.go,.cb,.q,.tk,#shd,#drd';
+  const CLOSE_SEL='#shx,.rm,[data-a=del],[data-a=x],#bx,#pvx,#vx,.tab button,#drd,#shd,#stc,#jback';
+  const role=el=>el.closest(CLOSE_SEL)?'close':el.closest('[data-k=studio]')?'studio':el.closest('[data-k=cofre]')?'cofre':el.closest('.sw,.td')?'toggle':'click';
+  window.__v6deleg=d=>d.addEventListener('click',e=>{
+    const el=e.target&&e.target.closest&&e.target.closest(A_SEL);if(!el)return;
+    const t=performance.now();setTimeout(()=>{if(lastPlay<t)window.play(role(el))},70)},true);
+  window.__v6deleg(document);
+});
 
-/* ================= COMANDOS LOCAIS ================= */
-const L0=window.local;
-window.local=function(raw){
-  const s=norm(raw);let m;
-  const V='(?:apagar|apague|apaga|remover|remova|remove|cancelar|cancele|cancela|excluir|exclua|deletar|delete|tirar|tire|limpar|limpe)';
-  /* tarefas */
-  if(new RegExp('^'+V+' (?:todas )?(?:as )?tarefas (?:concluidas|feitas|finalizadas|prontas)$').test(s)){const n=tasks.filter(x=>x.ok).length;tasks=tasks.filter(x=>!x.ok);stash();play('ok');return say(n?'Removi '+n+' tarefa'+(n>1?'s concluídas':' concluída')+', senhor.':'Não há tarefas concluídas, senhor.')}
-  if(new RegExp('^'+V+' (?:todas |tudo )?(?:as )?tarefas$').test(s)){const n=tasks.length;tasks=[];stash();play('ok');return say(n?'Lista limpa. Removi '+n+' tarefa'+(n>1?'s':'')+', senhor.':'A lista já estava vazia, senhor.')}
-  if(m=s.match(new RegExp('^'+V+' (?:a |o )?tarefas? (.+)$'))){const t=findTask(m[1]);if(!t)return say('Não encontrei essa tarefa, senhor. Diga o número ou parte do nome.');delTask(t);play('ok');return say('Tarefa "'+t.t+'" removida, senhor.')}
-  if(m=s.match(/^(?:concluir|conclua|conclui|finalizar|finalize|marcar|marque|completar|complete) (?:a )?tarefas? (.+)$/)){const t=findTask(m[1].replace(/ como (?:feita|concluida|pronta|finalizada)$/,''));if(!t)return say('Não encontrei essa tarefa, senhor.');t.ok=true;stash();play('ok');return say('Tarefa concluída, senhor.')}
-  if(m=s.match(/^(?:desmarcar|desmarque|reabrir|reabra) (?:a )?tarefas? (.+)$/)){const t=findTask(m[1],true);if(!t)return say('Não encontrei essa tarefa, senhor.');t.ok=false;stash();play('ok');return say('Tarefa reaberta, senhor.')}
-  if(m=raw.match(/^(?:editar|edite|mudar|mude|alterar|altere) (?:a )?tarefa (\d+) (?:para|pra) (.+)$/i)){const t=pend()[+m[1]-1];if(!t)return say('Não encontrei essa tarefa, senhor.');t.t=m[2].trim();stash();play('ok');return say('Tarefa atualizada, senhor.')}
-  /* memória */
-  if(/^(?:limpar|apagar|apague|esqueca|esquecer|zerar) (?:toda |a |minha )?memoria$/.test(s)){const n=mem.length;mem=[];stashM();play('ok');return say(n?'Memória apagada. Esqueci '+n+' registro'+(n>1?'s':'')+', senhor.':'A memória já estava vazia, senhor.')}
-  if(m=s.match(/^(?:esqueca|esquecer|apagar|apague|remover|remova) (?:da memoria )?(?:o |a )?(?:registro|memoria|item) (?:numero )?(.+)$/)){const t=findMem(m[1]);if(!t)return say('Não encontrei esse registro, senhor.');delMem(t);play('ok');return say('Esqueci, senhor.')}
-  if((m=s.match(/^(?:esqueca|esquecer) (?:que |de |do |da )?(.+)$/))&&!/^(?:conversa|tudo|a conversa)$/.test(m[1])){const t=findMem(m[1]);if(!t)return say('Não encontrei isso na memória, senhor.');delMem(t);play('ok');return say('Esqueci, senhor.')}
-  /* tela, brilho, volume */
-  if(/^(?:desligar|apagar|apague|desligue|escurecer|escureca) (?:a |minha )?tela$|^(?:tela preta|modo economia|modo tela preta)$/.test(s)){telaPreta(true);return say('Tela escurecida, senhor. O microfone continua ativo. Toque duas vezes para acordar.')}
-  if(/^(?:ligar|liga|ligue|acordar|acende|acender|ativar) (?:a |minha )?tela$/.test(s)){telaPreta(false);keepAwake(true);return say('Tela ativa e mantida ligada, senhor.')}
-  if(/brilho/.test(s)){
-    if(/(diminu|abaix|reduz|baix|minim|menos|escur)/.test(s))dim(dimLvl+1);else dim(/(maxim|normal|restaur)/.test(s)?0:dimLvl-1);
-    return say('Ajustei o brilho visual do Jarvis, senhor. O brilho real do aparelho só responde ao painel do sistema.')}
-  if(/(volume|som)/.test(s)&&/(celular|aparelho|sistema|geral|midia)/.test(s)){
-    if(AND)launch(intent(CFG.som),'som');return say('O navegador não me dá controle do volume do aparelho, senhor. Abri o painel de som para o senhor ajustar.')}
-  /* lanterna, vibração */
-  if(m=s.match(/^(ligar|liga|ligue|acender|acenda|ativar|ative|apagar|apague|desligar|desligue|desativar|desative) (?:a |o )?(?:lanterna|flash)$/)){
-    const on=/^(?:lig|acend|ativ)/.test(m[1]);return lanterna(on).then(ok=>say(ok?(on?'Lanterna acesa, senhor.':'Lanterna apagada, senhor.'):'Não consegui acessar a lanterna, senhor. Libere a câmera no navegador, ou ela não é suportada neste aparelho.'))}
-  if(/^vibr(?:ar|e)$/.test(s)){try{navigator.vibrate([200,100,200])}catch(e){}return say('Vibrando, senhor.')}
-  /* alarme, lembrete por horário, cronômetro */
-  if((m=s.match(/(?:alarme|despertador|acorde|acorda)\b.*?\b(\d{1,2})(?:[:h ]+(\d{2}))?/))&&+m[1]<24){
-    const ok=alarme(+m[1],+(m[2]||0),'Jarvis');return say(ok?'Preparando o alarme para '+pad(+m[1])+':'+pad(+(m[2]||0))+'. Toque no botão para confirmar, senhor.':'Neste aparelho criei um lembrete interno para '+pad(+m[1])+':'+pad(+(m[2]||0))+', senhor.')}
-  if(m=raw.match(/(?:lembre|lembra|avise|avisa)(?:-me)?(?: de| para)? (.+?) [àa]s (\d{1,2})(?:[:h]\s?(\d{2}))?/i))if(+m[2]<24)return lembrarHora(m[1].trim(),+m[2],+(m[3]||0));
-  if(/^(?:iniciar|inicia|comecar|comece|ligar) (?:o )?cronometro$/.test(s))return cron('iniciar');
-  if(/^(?:parar|pare|encerrar) (?:o )?cronometro$/.test(s))return cron('parar');
-  if(/(quanto tempo|cronometro).*(cronometro|passou|marca)/.test(s)&&cr)return cron('ver');
-  if(/(quanto falta|quais timers|meus timers|meus temporizadores)/.test(s)){return say(timers.length?timers.map(t=>(t.label)+' faltam '+durTxt(t.end-Date.now())).join('. ')+', senhor.':'Não há temporizadores ativos, senhor.')}
-  if(m=s.match(/quantos dias (?:faltam|falta) para (?:o |a )?(?:dia )?(.+)$/)){
-    const now=new Date();let d=null,nome=m[1];
-    if(/natal/.test(nome))d=new Date(now.getFullYear(),11,25);
-    else if(/ano novo|reveillon/.test(nome))d=new Date(now.getFullYear()+1,0,1);
-    else{const k=nome.match(/(\d{1,2}) de (\w+)/);if(k&&MES[k[2]]!==undefined)d=new Date(now.getFullYear(),MES[k[2]],+k[1])}
-    if(d){if(d<now&&!/ano novo|reveillon/.test(nome))d.setFullYear(d.getFullYear()+1);return say('Faltam '+Math.ceil((d-now)/864e5)+' dias, senhor.')}}
-  /* informações */
-  if(/bateria/.test(s)&&/(quanto|qual|como|nivel|status|carga|esta|ta )/.test(s))return bateria();
-  if(/(internet|conexao|rede|online)/.test(s)&&/(como|esta|ta |estou|conectado|qual)/.test(s))return rede();
-  if(/(informacoes|info|especificacoes|ficha).*(aparelho|celular|dispositivo)/.test(s))return aparelho();
-  if(/^(?:onde estou|qual (?:e )?minha localizacao|minha localizacao)$/.test(s))return onde(false);
-  if(/compartilh\w+ (?:minha )?localizacao/.test(s))return onde(true);
-  /* texto e área de transferência */
-  if(m=raw.match(/^copi(?:ar|e) (.+)/i)){return navigator.clipboard.writeText(m[1]).then(()=>say('Copiado, senhor.')).catch(()=>say('O navegador bloqueou a cópia, senhor.'))}
-  if(/(o que (?:eu )?copiei|area de transferencia|ler (?:o )?que copiei)/.test(s)){return navigator.clipboard.readText().then(t=>say(t?'Na área de transferência está: '+t.slice(0,300):'A área de transferência está vazia, senhor.')).catch(()=>say('O navegador não deixou eu ler a área de transferência, senhor.'))}
-  if(m=raw.match(/^compartilh(?:ar|e) (.+)/i)){return navigator.share?navigator.share({text:m[1]}).then(()=>say('Compartilhado, senhor.')).catch(()=>say('O compartilhamento foi cancelado ou bloqueado, senhor.')):say('Seu navegador não tem compartilhamento, senhor.')}
-  if(/(exportar|baixar|fazer) (?:meus )?(?:dados|backup)/.test(s)){exportar();return say('Backup gerado, senhor.')}
-  /* jarvis */
-  if(/^(?:repita|repete|repetir|fale de novo|fala de novo)$/.test(s)){const l=chat.filter(x=>x.r==='j').pop();return l?speak(l.t):say('Ainda não disse nada, senhor.')}
-  if(/^(?:ajuda|comandos|lista de comandos|o que (?:voce )?(?:pode|consegue) fazer)$/.test(s)){ajuda();return say('Abri a lista de comandos, senhor.')}
-  if(/(fal\w+|voz).*(devagar|lent|rapid|veloz|grave|agud|normal)/.test(s)&&/(fale|fala|voz)/.test(s))return voz(s);
-  if(/tema aleatorio/.test(s)){const k=Object.keys(TH),n=k[Math.random()*k.length|0];setTheme(n);play('theme');return say('Protocolo '+n+' ativado, senhor.')}
-  if(/^(?:ativar|ligar|ative|ligue) (?:o )?(?:modo )?(?:continuo|escuta continua|escuta)$/.test(s)){setCont(true);return say('Escuta contínua ativada. Diga Jarvis antes de cada comando, senhor.')}
-  if(/^(?:desativar|desligar|desative|desligue|parar) (?:o )?(?:modo )?(?:continuo|escuta continua)$|^parar de ouvir$/.test(s)){setCont(false);return say('Escuta contínua desativada, senhor.')}
-  if(m=s.match(/^(?:rolar|role|joga|jogar|jogue) (?:um |o )?dado(?: de | d)?(\d+)?$/)){const f=Math.max(2,+m[1]||6);return say('Saiu '+(1+Math.floor(Math.random()*f))+' no dado de '+f+' lados, senhor.')}
-  return L0(raw)};
+/* =====================================================================
+   2) VISUAL: hexágono 3D, SISTEMA ONLINE + BATERIA, dock sem emoji
+   ===================================================================== */
+S('ui',()=>{
+  /* limpa o que será refeito */
+  ['#stb','#stw','#stc','#ja-ov','#hud','#hud6'].forEach(s=>document.querySelectorAll(s).forEach(e=>e.remove()));
+  const lg=document.querySelector('.logo');
+  if(lg&&!lg.querySelector('.h3'))lg.insertAdjacentHTML('afterbegin',hex3d());
 
-/* ================= AÇÕES DA IA (ela agora pode tudo isso) ================= */
-const D0=window.doAction;
-window.doAction=function(a){
-  if(!a||!a.tipo)return D0(a);
-  const k=norm(a.alvo||'');
-  switch(a.tipo){
-    case'tarefa_apagar':{const t=findTask(a.alvo||'');if(t)delTask(t);return}
-    case'tarefa_concluir':{const t=findTask(a.alvo||'');if(t){t.ok=true;stash()}return}
-    case'tarefas_limpar':tasks=[];stash();return;
-    case'tarefas_feitas_limpar':tasks=tasks.filter(x=>!x.ok);stash();return;
-    case'memoria_apagar':{const t=findMem(a.alvo||'');if(t)delMem(t);return}
-    case'memoria_limpar':mem=[];stashM();return;
-    case'lanterna':lanterna(!/deslig|apag|off/.test(k));return;
-    case'tela_preta':telaPreta(true);return;
-    case'tela_ligada':keepAwake(!/deslig|off/.test(k));if(!/deslig|off/.test(k))telaPreta(false);return;
-    case'brilho':dim(/(baix|minim|diminu|escur)/.test(k)?dimLvl+1:/medi/.test(k)?2:0);return;
-    case'vibrar':try{navigator.vibrate([200,100,200])}catch(e){}return;
-    case'alarme':{const t=(a.alvo||'').match(/(\d{1,2})[:h ]?(\d{2})?/);if(t&&+t[1]<24)alarme(+t[1],+(t[2]||0),a.texto||'Jarvis');return}
-    case'cronometro':cron(/par/.test(k)?'parar':/ver|quanto/.test(k)?'ver':'iniciar');return;
-    case'copiar':try{navigator.clipboard.writeText(a.alvo||'')}catch(e){}return;
-    case'compartilhar':try{navigator.share({text:a.alvo||''})}catch(e){}return;
-    case'localizacao':onde(/compart/.test(k));return;
-    case'exportar':exportar();return;
-    case'voz':voz(k);return;
-  }
-  return D0(a)};
+  /* SISTEMA ONLINE + BATERIA (embaixo) + relógio */
+  const hud=document.createElement('div');hud.id='hud6';
+  hud.innerHTML='<div class="hl"><span><i class="dt"></i>SISTEMA ONLINE</span><span id="bat6">BATERIA --</span></div><b id="hc">--:--:--</b><span id="hb" hidden></span>';
+  document.querySelector('header').after(hud);
+  const tick=()=>{const e=document.getElementById('hc');if(e)e.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})};tick();setInterval(tick,1000);
+  const batSvg=(p,ch)=>'<svg viewBox="0 0 26 12"><rect x=".7" y=".7" width="21" height="10.6" rx="2" fill="none" stroke="currentColor"/><rect x="22.5" y="3.5" width="2.5" height="5" rx=".8" fill="currentColor"/><rect x="2.4" y="2.4" width="'+(17.6*p/100).toFixed(1)+'" height="7.2" rx="1" fill="currentColor"/>'+(ch?'<path d="M12.6 1.6L7.6 6.6h3.2L9.6 10.6l5-5.2h-3.2z" fill="#02101c"/>':'')+'</svg>';
+  try{navigator.getBattery().then(b=>{const u=()=>{const p=Math.round(b.level*100),e=document.getElementById('bat6');if(!e)return;e.classList.toggle('low',p<=20&&!b.charging);e.innerHTML=batSvg(p,b.charging)+'BATERIA '+p+'%'};u();b.onlevelchange=b.onchargingchange=u})}catch(e){}
 
-const EXTRA=`
-AÇÕES EXTRAS (use exatamente estes tipos): "tarefa_apagar" (alvo=número da tarefa pendente ou trecho do texto), "tarefa_concluir" (alvo idem), "tarefas_limpar" (apaga todas), "tarefas_feitas_limpar", "memoria_apagar" (alvo=número ou trecho), "memoria_limpar", "lanterna" (alvo=ligar ou desligar), "tela_preta" (escurece a tela por completo mantendo microfone e voz ativos), "tela_ligada" (alvo=ligar ou desligar, mantém a tela acesa), "brilho" (alvo=baixo, medio ou maximo; é um escurecimento visual), "vibrar", "alarme" (alvo=HH:MM, texto=rótulo; cria alarme real no relógio do Android), "cronometro" (alvo=iniciar, parar ou ver), "copiar" (alvo=texto), "compartilhar" (alvo=texto), "localizacao" (alvo=compartilhar para enviar), "exportar" (backup dos dados), "voz" (alvo=devagar, rapido, grave, aguda ou normal).
-Você TEM permissão total para criar, concluir, editar e apagar tarefas e memórias: use as ações acima e nunca diga que não tem permissão nem invente "comandos de remoção". Para pedidos de apagar ou limpar, execute e confirme.
-LIMITES REAIS (seja honesto, sem inventar): pelo navegador você não consegue mudar o volume geral nem o brilho real do aparelho, nem desligar a tela de verdade, nem controlar outros aplicativos por dentro. Para volume, abra a configuração "som"; para tela, ofereça "tela_preta".
-NUNCA use emojis, emoticons nem símbolos decorativos nas suas respostas: apenas texto simples.`;
-function wrapSample(){
-  if(typeof sample!=='function'||sample.__v5)return;
-  const S0=sample;
-  const W=function(msgs,o){
-    try{const p=pend().map((x,i)=>(i+1)+') '+x.t).join('; '),mm=mem.map((x,i)=>(i+1)+') '+x.t).join('; ');
-      msgs[0].content+=EXTRA+'\nTAREFAS PENDENTES NUMERADAS: '+(p||'nenhuma')+'.\nMEMÓRIA NUMERADA: '+(mm||'vazia')+'.'}catch(e){}
-    return S0(msgs,o)};
-  W.__v5=1;sample=W}
-wrapSample();setTimeout(wrapSample,600);setTimeout(wrapSample,2500);
+  /* dock: ícones por código; COFRE e STUDIO (direita) */
+  const dock=$('#dock');
+  [...dock.children].forEach(b=>{if(/COFRE|STUDIO|MERCADO/i.test(b.textContent||'')||b.id==='stb')b.remove()});
+  const setI=(k,n)=>{const b=document.querySelector('#dock [data-k="'+k+'"] b');if(b)b.innerHTML=ico(IC[n])};
+  setI('clima','clima');setI('tarefas','tarefas');setI('txt','txt');setI('mem','mem');
+  const mkb=(k,n,l,c)=>'<button class="hx'+(c||'')+'" data-k="'+k+'"><span><b>'+ico(IC[n])+'</b>'+l+'</span></button>';
+  dock.insertAdjacentHTML('beforeend',mkb('cofre','lock','COFRE')+mkb('studio','code','STUDIO',' sp'));
+  const g=document.querySelector('#gear b');if(g)g.innerHTML=ico(IC.gear);
+  const sb=document.querySelector('#tb .hx b');if(sb)sb.innerHTML=ico(IC.send);
+  dock.addEventListener('click',e=>{const b=e.target.closest('[data-k=cofre],[data-k=studio]');if(!b)return;
+    e.stopImmediatePropagation();e.preventDefault();play(b.dataset.k);openP(b.dataset.k)},true);
 
-/* ================= TIMERS SOBREVIVEM A RECARREGAR ================= */
-try{const old=ld('timers',[]).filter(t=>t&&t.end);
-  const alive=old.filter(t=>t.end>Date.now()),lost=old.filter(t=>t.end<=Date.now()&&t.rem);
-  alive.forEach(t=>timers.push(t));drawTimers();
-  if(lost.length)setTimeout(()=>showJ('Senhor, enquanto estava fora passou o lembrete: '+lost.map(t=>t.label).join(', ')+'.'),6500)}catch(e){}
-setInterval(()=>{try{sv('timers',timers)}catch(e){}},2000);
+  /* nada de posição errada: recalcula o layout quando algo muda de lugar */
+  let rl=0;const relayout=()=>{cancelAnimationFrame(rl);rl=requestAnimationFrame(()=>{try{window.dispatchEvent(new Event('resize'))}catch(e){}})};
+  window.__v6relayout=relayout;
+  try{const ro=new ResizeObserver(relayout);['#cap','#hud6','#dock','header'].forEach(s=>{const e=document.querySelector(s);if(e)ro.observe(e)})}catch(e){}
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(relayout);
+  relayout();setTimeout(relayout,350);setTimeout(relayout,1200);
+});
 
-/* ================= STUDIO ABRE SEM LAG ================= */
-const css=document.createElement('style');
-css.textContent=`
-#stw{clip-path:none!important;opacity:0;visibility:hidden;transform:translateY(14px) scale(.985);transition:opacity .2s ease-out,transform .2s ease-out,visibility 0s linear .2s!important;will-change:opacity,transform}
-#stw.on{opacity:1;visibility:visible;transform:none;transition:opacity .2s ease-out,transform .2s ease-out,visibility 0s!important}`;
-document.head.appendChild(css);
+/* =====================================================================
+   3) SEM EMOJI (painéis, clima, configurações)
+   ===================================================================== */
+S('emoji',()=>{
+  const EM=/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B50}\u{23E9}-\u{23FF}]/gu;
+  const skip=n=>n.parentElement&&n.parentElement.closest('.wi,.ob,[data-keep]');
+  function sweep(r){
+    const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;const hit=[];
+    while(n=w.nextNode()){if(!skip(n)&&(EM.test(n.nodeValue)||/Toque em/.test(n.nodeValue)))hit.push(n);EM.lastIndex=0}
+    hit.forEach(t=>{t.nodeValue=t.nodeValue.replace(/Toque em \S*\s*e escolha/,'Toque no botão de pasta e escolha').replace(EM,'')});
+    r.querySelectorAll('.rm').forEach(b=>{if(!b.firstElementChild)b.innerHTML=ico(IC.x)});
+    r.querySelectorAll('.rb[data-a]').forEach(b=>{if(!b.firstElementChild)b.innerHTML=ico(IC[{play:'play',pick:'folder',del:'x'}[b.dataset.a]])});
+    r.querySelectorAll('.wi,.ob b').forEach(b=>{if(!b.firstElementChild){const k=WM[Array.from(b.textContent)[0]];if(k)b.innerHTML=ico(IC[k])}})}
+  let q=0;const go=()=>{if(q)return;q=1;Promise.resolve().then(()=>{q=0;['#shb','#cap'].forEach(s=>{const e=document.querySelector(s);if(e)sweep(e)})})};
+  ['#shb','#cap'].forEach(s=>{const e=document.querySelector(s);if(e)new MutationObserver(go).observe(e,{childList:true,subtree:true,characterData:true})});
+  go()});
 
-/* pré-carrega o Studio em segundo plano depois da abertura (o clique só mostra, não carrega) */
-function preload(){const fr=S('#stw iframe');if(!fr)return;
-  try{Object.defineProperty(fr,'src',{configurable:true,get(){return fr.getAttribute('src')||''},set(v){if(!fr.getAttribute('src'))fr.setAttribute('src',v)}})}catch(e){}
-  if(!fr.getAttribute('src'))fr.setAttribute('src','studio.html')}
-const pi=setInterval(()=>{if(typeof mainDraw!=='undefined'&&mainDraw){clearInterval(pi);setTimeout(()=>('requestIdleCallback' in window?requestIdleCallback(preload,{timeout:4000}):preload()),2500)}},500);
+/* =====================================================================
+   4) GRAVAÇÃO DE VOZ: só para quando tocar no reator, enviar, editar
+   ===================================================================== */
+let vOn=false,vWant=false,vRec=false,vr=null,vBase='',vT0=0,vTm=0,vFail=0,vKbd=false,vLast=0;
+S('voz',()=>{
+  const SRc=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const pn=document.createElement('div');pn.id='vp';
+  pn.innerHTML=
+   '<div class="vh"><i class="vd"></i><span id="vs">GRAVANDO</span><span class="vk" id="vk">00:00</span></div>'+
+   '<canvas id="vw"></canvas>'+
+   '<textarea id="vt" rows="2" placeholder="Fale, ou toque aqui para digitar…" enterkeyhint="send" autocomplete="off" spellcheck="false"></textarea>'+
+   '<div class="vb"><button class="hx sm" id="vx" aria-label="Cancelar"><span><b>'+ico(IC.x)+'</b></span></button>'+
+   '<button class="hx sm" id="vm" aria-label="Microfone"><span><b>'+ico(IC.mic)+'</b></span></button>'+
+   '<button id="vsend">'+ico(IC.send)+'ENVIAR</button></div>';
+  $('#dock').before(pn);
+  const ta=$('#vt'),wv=$('#vw'),wx=wv.getContext('2d');
+  const grow=()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,innerHeight*.22)+'px'};
 
-/* com Studio aberto ou tela preta, o Jarvis desenha a 4 quadros/s (libera a CPU para o editor) */
-const slow=()=>{const w=S('#stw');return !!blk||(w&&w.classList.contains('on'))};
-const _raf=window.requestAnimationFrame.bind(window);
-window.requestAnimationFrame=function(cb){return slow()?setTimeout(()=>_raf(cb),250):_raf(cb)};
+  function ui(){
+    document.body.classList.toggle('vpp',!vRec);
+    const t=vRec?'GRAVANDO · REATOR PARA PARAR':vWant?'INICIANDO…':'PAUSADO · REATOR RETOMA';
+    $('#vs').textContent=t;$('#vm').classList.toggle('on',vRec);
+    if(vOn)setSt(vRec?'GRAVANDO':'PAUSADO')}
+  function stopRec(){try{vr&&vr.stop()}catch(e){}}
+  function startRec(){
+    if(!SRc){setSt('SEM RECONHECIMENTO DE VOZ · USE O TECLADO');play('err');vWant=false;return}
+    try{speechSynthesis.cancel()}catch(e){}
+    if(performance.now()-vLast<500){if(++vFail>4){vWant=false;ui();return}}else vFail=0;
+    vLast=performance.now();
+    vBase=ta.value.trim()?ta.value.trim()+' ':'';
+    const r=new SRc();r.lang='pt-BR';r.continuous=true;r.interimResults=true;
+    r.onstart=()=>{if(vr!==r)return;vRec=true;listening=true;ui()};
+    r.onresult=e=>{if(vr!==r)return;let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;
+      ta.value=vBase+s;grow();ta.scrollTop=ta.scrollHeight;bump=.5};
+    r.onerror=e=>{if(vr!==r)return;
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){vWant=false;setSt('PERMITA O MICROFONE')}
+      else if(e.error==='network'){vWant=false;setSt('SEM CONEXÃO PARA A VOZ')}};
+    r.onend=()=>{if(vr!==r)return;vRec=false;listening=false;
+      if(vWant&&vOn)setTimeout(()=>{if(vWant&&vOn&&vr===r)startRec()},200);ui()};
+    vr=r;try{r.start()}catch(e){}}
 
+  function openVoice(){
+    if(typeof closeSheet==='function')closeSheet();
+    vOn=true;vWant=true;ta.value='';grow();vT0=performance.now();
+    document.body.classList.add('vp');play('listen');ui();startRec();
+    clearInterval(vTm);vTm=setInterval(()=>{const s=Math.floor((performance.now()-vT0)/1000);$('#vk').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},500);
+    cancelAnimationFrame(wraf);wraf=requestAnimationFrame(drawW);
+    window.__v6relayout&&window.__v6relayout()}
+  function closeVoice(){
+    vOn=false;vWant=false;const r=vr;vr=null;try{r&&r.abort()}catch(e){}
+    vRec=false;listening=false;clearInterval(vTm);
+    document.body.classList.remove('vp','vpp');if(vKbd){document.body.classList.remove('kbd');vKbd=false}
+    try{ta.blur()}catch(e){}
+    if(!speaking&&!think)setSt('AGUARDANDO COMANDO');
+    window.__v6relayout&&window.__v6relayout()}
+  window.__v6closeVoice=()=>{if(vOn)closeVoice()};
+  function send(){
+    const t=ta.value.trim();
+    if(!t){pn.classList.remove('shk');void pn.offsetWidth;pn.classList.add('shk');play('err');return}
+    closeVoice();handle(t)}
 
-/* ##########################################################################
-   AJUSTES NOVOS
-   ########################################################################## */
+  /* reator: abre a gravação; com ela aberta, alterna parar/retomar */
+  const L0=window.listen;
+  window.listen=function(){
+    if(contOn)return L0.apply(this,arguments);
+    if(!vOn){openVoice();return}
+    if(vWant||vRec){vWant=false;stopRec();play('stop');ui()}
+    else{vWant=true;ui();startRec();play('listen')}};
 
-/* ================= 12) SEM EMOJI: tudo vira ícone feito por código (SVG) ================= */
-const SV=p=>'<svg class="ji" viewBox="0 0 24 24" style="width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.14em;flex:none">'+p+'</svg>';
-const ICO={
-  '\u21A9':SV('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>'),
-  '\u271A':SV('<path d="M12 5v14M5 12h14"/>'),
-  '\u{1F4CB}':SV('<rect x="6" y="5" width="12" height="16"/><path d="M9 5V3h6v2M9 11h6M9 15h4"/>'),
-  '\u{1F50D}':SV('<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>'),
-  '\u26A1':SV('<path d="M13 2L5 14h6l-1 8 8-12h-6z"/>'),
-  '\u25B6':SV('<path d="M7 5l12 7-12 7z" style="fill:currentColor"/>'),
-  '\u27A4':SV('<path d="M3 12L21 4l-6 16-3.2-6.8z"/>'),
-  '\u25B2':SV('<path d="M12 6l8 12H4z" style="fill:currentColor"/>'),
-  '\u25BC':SV('<path d="M12 18L4 6h16z" style="fill:currentColor"/>')};
-const RX=/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}\u2190-\u21FF\u25A0-\u25FF\u2700-\u27BF\u2B00-\u2BFF]/gu;
-function fixText(n){
-  RX.lastIndex=0;if(!RX.test(n.data))return;RX.lastIndex=0;
-  const d=n.ownerDocument,f=d.createDocumentFragment(),s=n.data;let last=0,m;
-  while((m=RX.exec(s))){f.append(s.slice(last,m.index));const h=ICO[m[0]];if(h){const t=d.createElement('template');t.innerHTML=h;f.append(t.content)}last=m.index+m[0].length}
-  f.append(s.slice(last));if(n.parentNode)n.replaceWith(f)}
-function sweep(root){
-  if(!root)return;
-  if(root.nodeType===3){fixText(root);return}
-  if(root.nodeType!==1)return;
-  const w=root.ownerDocument.createTreeWalker(root,4),L=[];let n;
-  while((n=w.nextNode())){const t=n.parentNode&&n.parentNode.nodeName;if(t==='SCRIPT'||t==='STYLE'||t==='TEXTAREA')continue;RX.lastIndex=0;if(RX.test(n.data))L.push(n)}
-  L.forEach(fixText)}
-function watch(doc){
-  if(!doc||doc.__jw||!doc.body)return;doc.__jw=1;
-  sweep(doc.body);
-  new doc.defaultView.MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')sweep(m.target);else m.addedNodes.forEach(sweep)}})
-    .observe(doc.body,{childList:true,subtree:true,characterData:true})}
+  $('#vsend').onclick=send;
+  $('#vx').onclick=()=>{closeVoice();setSt('AGUARDANDO COMANDO')};
+  $('#vm').onclick=()=>{if(vWant||vRec){vWant=false;stopRec();play('stop');ui()}else{vWant=true;ui();startRec();play('listen')}};
+  ta.addEventListener('input',grow);
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+  ta.addEventListener('focus',()=>{if(vWant||vRec){vWant=false;stopRec()}ui();document.body.classList.add('kbd');vKbd=true;
+    setTimeout(()=>window.__v6relayout&&window.__v6relayout(),120);setTimeout(()=>window.__v6relayout&&window.__v6relayout(),420)});
+  ta.addEventListener('blur',()=>{if(vKbd){document.body.classList.remove('kbd');vKbd=false;setTimeout(()=>window.__v6relayout&&window.__v6relayout(),150)}});
 
-/* ================= 13) HEXÁGONO 3D NO LUGAR DO TRIÂNGULO DO LOGO ================= */
-const HEXSVG='<svg viewBox="0 0 24 24" width="20" height="20" style="display:block;overflow:visible"><defs><linearGradient id="jhA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" style="stop-color:var(--ac2)"/></linearGradient></defs>'+
-  '<path d="M12 1.5L21.1 6.75L12 12L2.9 6.75Z" fill="url(#jhA)"/>'+
-  '<path d="M2.9 6.75L12 12V22.5L2.9 17.25Z" style="fill:var(--ac);fill-opacity:.55"/>'+
-  '<path d="M21.1 6.75V17.25L12 22.5V12Z" style="fill:var(--ac);fill-opacity:.92"/>'+
-  '<path d="M12 1.5L21.1 6.75V17.25L12 22.5L2.9 17.25V6.75ZM2.9 6.75L12 12L21.1 6.75M12 12V22.5" style="fill:none;stroke:var(--ac2);stroke-width:.9;stroke-linejoin:round"/></svg>';
-const HEXCSS='.jhex{display:inline-flex;width:20px;height:20px;flex:none;filter:drop-shadow(0 0 5px var(--ac));animation:jhx 3.4s ease-in-out infinite}@keyframes jhx{50%{filter:drop-shadow(0 0 10px var(--ac)) brightness(1.25)}}.logo::before{content:none!important}';
-function logoHex(doc){
-  const lg=doc.querySelector('.logo');if(!lg||lg.querySelector('.jhex'))return;
-  const el=doc.createElement('span');el.className='jhex';el.innerHTML=HEXSVG;
-  const i=lg.querySelector(':scope>i');if(i)i.replaceWith(el);else lg.insertBefore(el,lg.firstChild)}
+  /* onda sonora */
+  let wraf=0;
+  function drawW(ts){
+    if(!vOn){wraf=0;return}wraf=requestAnimationFrame(drawW);
+    const r=wv.getBoundingClientRect(),W=Math.max(10,r.width),H=Math.max(10,r.height);
+    if(wv.width!==Math.round(W*DPR)){wv.width=Math.round(W*DPR);wv.height=Math.round(H*DPR)}
+    wx.setTransform(DPR,0,0,DPR,0,0);wx.clearRect(0,0,W,H);
+    const t=ts/1000,N=Math.floor(W/6),amp=vRec?.2+Math.min(.8,bump*1.6):.05;
+    for(let i=0;i<N;i++){const u=i/N,env=Math.sin(u*Math.PI),
+      h=2+(H-4)*amp*env*(.3+.7*Math.abs(Math.sin(t*5+i*.6)*Math.sin(t*2.1+i*.23)));
+      wx.fillStyle='rgba('+ACR+','+(.3+.65*env)+')';wx.fillRect(i*6+1,(H-h)/2,3,h)}}
+});
 
-/* ================= 14) COFRE E STUDIO (dentro do Jarvis): mesmo tratamento ================= */
-function skin(doc){
-  if(!doc||doc.__sk||!doc.body||!doc.head)return;
-  let h='';try{h=doc.location.href}catch(e){return}
-  if(h==='about:blank')return;
-  doc.__sk=1;
-  const st=doc.createElement('style');st.textContent=HEXCSS;doc.head.appendChild(st);
-  watch(doc);logoHex(doc)}
-function hookFrame(f){
-  if(f.__jh)return;f.__jh=1;let n=0;
-  const go=()=>{try{skin(f.contentDocument)}catch(e){}};
-  f.addEventListener('load',()=>{try{if(f.contentDocument)f.contentDocument.__sk=0}catch(e){}go()});
-  const iv=setInterval(()=>{go();let ok=false;try{ok=f.contentDocument&&f.contentDocument.__sk}catch(e){}if(ok||++n>150)clearInterval(iv)},40)}
-const scanFrames=()=>document.querySelectorAll('iframe').forEach(hookFrame);
-scanFrames();new MutationObserver(scanFrames).observe(document.documentElement,{childList:true,subtree:true});
+/* =====================================================================
+   5) STUDIO e COFRE: camadas pré-carregadas do próprio Jarvis
+   ===================================================================== */
+let isOpen=false,cur=null,frozen=false,prevMain=false;
+const P={studio:{src:'studio.html',f:null,ready:false,paused:true,pend:[],raf:null},cofre:{src:'cofre.html',f:null,ready:false,paused:true,pend:[],raf:null}};
+let OV=null;
+function openP(k){}function closeP(){}
+S('paineis',()=>{
+  OV=document.createElement('div');OV.id='v6ov';document.body.appendChild(OV);
 
-/* ================= 15) HUD: "BATERIA" EMBAIXO DE "SISTEMA ONLINE" ================= */
-(function hud(){
-  const h=S('#hud'),hb=S('#hb');if(!h||!hb||S('#hl'))return;
-  const left=h.firstElementChild;if(!left)return;
-  const col=document.createElement('div');col.id='hl';h.insertBefore(col,left);col.append(left,hb);
-  let on=0;
-  const fx=()=>{
-    if(on)return;const t=hb.textContent||'';
-    if(!/^BAT\b/.test(t)&&!/\u26A1/.test(t))return;on=1;
-    const chg=/\u26A1/.test(t)||!!hb.querySelector('.ji');
-    hb.textContent=t.replace(/^BAT\b/,'BATERIA').replace(/\s*\u26A1/g,'').trim();
-    if(chg){const tp=document.createElement('template');tp.innerHTML=ICO['\u26A1'];hb.append(tp.content)}
-    setTimeout(()=>{on=0},0)};
-  new MutationObserver(fx).observe(hb,{childList:true,characterData:true,subtree:true});fx();
-  setTimeout(()=>{try{rs()}catch(e){}dispatchEvent(new Event('resize'))},80)})();
+  /* o Jarvis para de desenhar enquanto a camada está aberta (sem lag) */
+  const bg0=window.bgdraw;
+  window.bgdraw=function(){if(frozen)return;return bg0.apply(this,arguments)};
+  function freeze(on){
+    if(on){prevMain=mainDraw;mainDraw=false;frozen=true;document.body.classList.add('v6-open')}
+    else{frozen=false;mainDraw=prevMain||mainDraw;document.body.classList.remove('v6-open')}}
 
-/* ================= 16) STUDIO NO LADO DIREITO + VISUAL IGUAL AO DOS OUTROS BOTÕES ================= */
-(function studioBtn(){
-  const stb=S('#stb'),gear=S('#gear');if(!stb||!gear||S('#hgrp'))return;
-  const g=document.createElement('div');g.id='hgrp';gear.before(g);g.append(gear,stb)})();
+  const themeVars=()=>{const c=getComputedStyle(root);return{ac:c.getPropertyValue('--ac').trim(),ac2:c.getPropertyValue('--ac2').trim(),acr:c.getPropertyValue('--acr').trim(),ac2r:c.getPropertyValue('--ac2r').trim()}};
+  function pushTheme(f){try{
+    const w=f.contentWindow,d=f.contentDocument,v=themeVars(),r=d.documentElement.style;
+    r.setProperty('--ac',v.ac);r.setProperty('--ac2',v.ac2);r.setProperty('--acr',v.acr);r.setProperty('--ac2r',v.ac2r);
+    w.eval('try{if(typeof ACR!=="undefined"){ACR="'+v.acr+'";AC2R="'+v.ac2r+'"}}catch(e){}')}catch(e){}}
+  const ST0=window.setTheme;
+  window.setTheme=function(){const r=ST0.apply(this,arguments);try{Object.values(P).forEach(p=>{if(p.f&&p.ready)pushTheme(p.f)})}catch(e){}return r};
 
-/* ================= 17) TEMA: salva sempre e sempre volta como estava ================= */
-(function tema(){
-  const KEY='jp_th';
-  const get=()=>{try{return JSON.parse(localStorage.getItem(KEY))||localStorage.getItem('jarvis_tema')}catch(e){return null}};
-  const put=n=>{try{localStorage.setItem(KEY,JSON.stringify(n));localStorage.setItem('jarvis_tema',n)}catch(e){}};
-  const has=n=>typeof TH!=='undefined'&&TH&&TH[n];
-  try{const S0=setTheme,W=function(n){const r=S0.apply(this,arguments);if(has(n)&&arguments[1]!==false)put(n);return r};
-    try{setTheme=W}catch(e){}window.setTheme=W}catch(e){}
-  /* qualquer outro caminho que troque a cor (toque no seletor) também é gravado */
-  let tap=0;['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{tap=Date.now()},true));
-  new MutationObserver(()=>{
-    if(Date.now()-tap>1500||typeof TH==='undefined'||document.body.classList.contains('alert'))return;
-    const v=document.documentElement.style.getPropertyValue('--ac').trim().toLowerCase();
-    const n=Object.keys(TH).find(k=>TH[k][0].toLowerCase()===v);if(n)put(n)}).observe(document.documentElement,{attributes:true,attributeFilter:['style']});
-  const restore=()=>{
-    const n=get();if(!n||!has(n)||document.body.classList.contains('alert'))return;
-    if(typeof curTheme!=='undefined'&&curTheme===n)return;
-    const p=play;try{play=function(){};setTheme(n)}catch(e){}finally{try{play=p}catch(e){}}};
-  restore();[600,2000,5000].forEach(ms=>setTimeout(restore,ms));
-  addEventListener('pageshow',restore);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore()})})();
+  function setPause(p,on){
+    p.paused=on;
+    if(!on&&p.pend.length&&p.raf){const q=p.pend;p.pend=[];q.forEach(cb=>p.raf(cb))}}
 
-/* ================= 18) SONS: sem atraso e abertura cancelável ================= */
-const SND=new Map(),live=new Set();
-const aux=()=>{try{return ax()}catch(e){return null}};
-const VOL=()=>Math.min(1,typeof vol==='number'?vol:.8);
-const FXON=()=>typeof fxOn==='undefined'||!!fxOn;
-/* acha onde o som realmente começa (pula o silêncio de ~0,4 s do início do arquivo) */
-function lead(b){
-  const lim=Math.min(b.length,Math.floor(b.sampleRate*1.2));let best=lim;
-  for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);for(let i=0;i<best;i++){if(d[i]>.02||d[i]<-.02){best=i;break}}}
-  return best>=lim?0:Math.max(0,best/b.sampleRate-.004)}
-function warm(u){
-  if(!u||SND.has(u))return;const x=aux();if(!x)return;SND.set(u,{});
-  fetch(u).then(r=>r.arrayBuffer()).then(a=>x.decodeAudioData(a)).then(b=>{SND.set(u,{buf:b,off:lead(b)})}).catch(()=>SND.delete(u))}
-const warmAll=()=>{try{Object.keys(SU).forEach(k=>warm(SU[k]))}catch(e){}};
-[700,2000,4500,9000].forEach(ms=>setTimeout(warmAll,ms));
-document.addEventListener('pointerdown',warmAll,true);
-function startBuf(k,when,trim){
-  const u=SU[k],c=u&&SND.get(u),x=aux();if(!c||!c.buf||!x)return null;
-  const s=x.createBufferSource(),g=x.createGain();s.buffer=c.buf;g.gain.value=VOL();s.connect(g);g.connect(x.destination);
-  s.start(when||0,trim?c.off:0);live.add(s);s.onended=()=>live.delete(s);return s}
+  function route(u,e){
+    if(u.origin!==location.origin)return;
+    if(samePath(u.pathname)){e&&e.preventDefault();closeP();return}
+    if(/cofre\.html?$/i.test(u.pathname)){e&&e.preventDefault();play('cofre');openP('cofre');return}
+    if(/studio\.html?$/i.test(u.pathname)){e&&e.preventDefault();play('studio');openP('studio')}}
 
-/* abertura: todos os sons da animação são controlados aqui */
-const TT={boot:0,boot_a:.15,boot_b:1.7,boot_t:1.9,boot_d:2.2,boot_c:2.6,boot_e:4.1,boot_f:5.3};
-let introAt=0,introMute=0,introTm=[],introAud=[];
-function stopIntro(){
-  introTm.forEach(clearTimeout);introTm=[];
-  live.forEach(s=>{if(s.__intro){try{s.stop()}catch(e){}live.delete(s)}});
-  introAud.forEach(a=>{try{a.pause()}catch(e){}});introAud=[];
-  try{speechSynthesis.cancel()}catch(e){}}
-const introHandle={pause(){stopIntro()}};
-window.jaOpenStart=function(){
-  const n=performance.now();if(n-introAt<800)return;
-  introAt=n;introMute=0;stopIntro();
-  if(!FXON())return;
-  const x=aux();if(x&&x.state==='suspended')x.resume();
-  warmAll();const base=x?x.currentTime+.04:0;
-  if(!SU.boot){try{FB.boot()}catch(e){}}
-  Object.keys(TT).forEach(k=>{
-    const u=SU[k];if(!u)return;const c=SND.get(u);
-    if(x&&c&&c.buf){const s=startBuf(k,base+TT[k],false);if(s)s.__intro=1}
-    else introTm.push(setTimeout(()=>{try{const a=new Audio(u);a.volume=VOL();a.play().catch(()=>{});introAud.push(a)}catch(e){}},TT[k]*1000))})};
-window.jaOpenSkip=function(){
-  const at=introAt;stopIntro();introMute=at+5000;introAt=0};
-/* qualquer toque durante a animação pula e CORTA todos os sons dela */
-document.addEventListener('pointerdown',()=>{
-  if(!introAt)return;const d=performance.now()-introAt;
-  if(d>250&&d<5700)window.jaOpenSkip()},true);
-/* os bipes sintetizados da abertura também param */
-try{const B0=bp;bp=function(){if(performance.now()<introMute)return;return B0.apply(this,arguments)}}catch(e){}
+  function fixCofre(d){
+    const h=d.querySelector('header');if(!h)return;
+    h.style.justifyContent='flex-start';h.style.gap='8px';
+    const a=h.querySelector('a.hx');if(a)a.style.display='none';
+    if(!d.getElementById('jback')){const b=d.createElement('button');b.id='jback';b.className='ic';b.setAttribute('aria-label','Voltar ao Jarvis');b.innerHTML=ico(IC.back,2);b.onclick=()=>closeP();h.insertBefore(b,h.firstChild)}
+    const li=h.querySelector('.logo i');if(li)li.outerHTML=hex3d();
+    [['#new b','plus'],['#paste b','clip'],['#sch b','search']].forEach(([s,n])=>{const e=d.querySelector(s);if(e)e.innerHTML=ico(IC[n])})}
+  function fixStudio(d){
+    const h=d.querySelector('header');if(!h)return;
+    if(!d.getElementById('jback')){const b=d.createElement('button');b.id='jback';b.className='ic';b.setAttribute('aria-label','Voltar ao Jarvis');b.innerHTML=ico(IC.back,2);b.onclick=()=>closeP();h.insertBefore(b,h.firstChild)}}
 
-/* play: toca direto da memória, já sem o silêncio do começo */
-{const P0=play;
- play=function(k,o){
-  if(k==='boot'&&!(o&&o.force)){window.jaOpenStart();return introHandle}
-  if(!FXON()&&!(o&&o.force))return;
-  if(!/^boot/.test(k)){
-    const s=startBuf(k,0,true);
-    if(s)return{pause(){try{s.stop()}catch(e){}}};
-    warm(SU[k])}
-  return P0.apply(this,arguments)}}
+  function hook(k,f){
+    let w,d;try{w=f.contentWindow;d=f.contentDocument;if(!w||!d||!d.body||w.location.href==='about:blank')return}catch(e){return}
+    const p=P[k];if(p.hooked===w)return;p.hooked=w;
+    if(samePath(w.location.pathname)){p.hooked=null;f.src=p.src;return}
+    try{w.play=function(a,o){return window.play(a,o)}}catch(e){}              /* sons iguais aos do Jarvis, sem corte */
+    try{const raf0=w.requestAnimationFrame.bind(w);p.raf=raf0;
+      w.requestAnimationFrame=function(cb){if(p.paused){p.pend.push(cb);return 0}return raf0(cb)}}catch(e){}
+    try{const s=d.createElement('style');s.textContent=IF_CSS;d.head.appendChild(s)}catch(e){}
+    pushTheme(f);
+    window.__v6deleg(d);
+    d.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;let u;try{u=new URL(a.href,w.location.href)}catch(x){return}route(u,e)},true);
+    if(w.navigation)w.navigation.addEventListener('navigate',e=>{
+      if(!e.cancelable||e.hashChange||e.destination.sameDocument||e.navigationType==='reload'||e.navigationType==='traverse')return;
+      let u;try{u=new URL(e.destination.url)}catch(x){return}route(u,e)});
+    try{k==='cofre'?fixCofre(d):fixStudio(d)}catch(e){}
+    p.ready=true;
+    if(isOpen&&cur===k)setPause(p,false)}
 
-/* ================= 19) SEM PISCAR AO VOLTAR DO STUDIO / COFRE ================= */
-/* o fix antigo escondia o Jarvis com display:none: ao voltar, as animações de entrada rodavam de novo
-   e o reator pulava de posição. Agora só fica invisível (o layout não muda). */
-document.querySelectorAll('style').forEach(s=>{
-  const t='body.ja-open>*:not(#ja-ov):not(#stw){display:none!important}';
-  if(s.textContent.includes(t))s.textContent=s.textContent.replace(t,'body.ja-open>*:not(#ja-ov):not(#stw){visibility:hidden!important}')});
-/* só recalcula o tamanho dos quadros se o tamanho realmente mudou (recalcular apaga o desenho) */
-const curSz=()=>{const r=S('#reactor');let k=innerWidth+'x'+innerHeight;if(r){const b=r.getBoundingClientRect();k+='|'+Math.round(b.left)+','+Math.round(b.top)+','+Math.round(b.width)}return k};
-try{if(typeof rs==='function'){const rs0=rs;let sig='';
-  rs=function(){const k=curSz();if(k===sig)return;sig=k;return rs0.apply(this,arguments)}}}catch(e){}
-let lastSz='';
-addEventListener('resize',e=>{const k=curSz();if(!e.isTrusted&&k===lastSz){e.stopImmediatePropagation();return}lastSz=k},true);
+  function mk(k){
+    const p=P[k];if(p.f)return p;
+    const f=document.createElement('iframe');f.title=k;
+    f.allow='microphone; clipboard-read; clipboard-write; fullscreen; autoplay';
+    f.addEventListener('load',()=>hook(k,f));
+    f.src=p.src;OV.appendChild(f);p.f=f;return p}
 
-/* ================= 20) GRAVAR ÁUDIO: toque no reator, fala sem cortar, ENVIAR ================= */
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let mic=null,recOn=false,committed='',curTxt='',wasCont=false,blocked=false,fails=0,lastStart=0,endCb=null;
-const joinT=(a,b)=>(a+' '+b).replace(/\s+/g,' ').trim();
-const fullTxt=()=>joinT(committed,curTxt);
-const panel=document.createElement('div');panel.id='rec';
-panel.innerHTML='<div class="rcd"><div class="rlb"><i></i><span id="rls"></span></div><div id="rtx"></div><div class="rbt"><button id="rsd" class="rbp">'+ICO['\u27A4']+'<span>ENVIAR</span></button><button id="rcn" class="rbd">'+SV('<path d="M6 6l12 12M18 6L6 18"/>')+'<span>DESCARTAR</span></button></div></div>';
-document.body.appendChild(panel);
-const setLive=on=>{try{listening=!!on}catch(e){}document.body.classList.toggle('jrec',!!on)};
-function draw(){
-  const t=fullTxt(),tx=S('#rtx');
-  tx.textContent=t||'Fale agora, senhor…';tx.classList.toggle('ph',!t);
-  S('#rsd').disabled=!t;
-  S('#rls').textContent=recOn?'GRAVANDO  ·  TOQUE NO REATOR PARA PARAR':'PARADO  ·  ENVIE OU DESCARTE';
-  panel.classList.toggle('live',recOn);tx.scrollTop=1e5}
-function mkRec(){
-  const r=new SR();r.lang='pt-BR';r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
-  r.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;curTxt=s.trim();draw()};
-  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){blocked=true;recOn=false;try{setSt('PERMITA O MICROFONE')}catch(x){}}};
-  r.onend=()=>{
-    committed=joinT(committed,curTxt);curTxt='';
-    if(Date.now()-lastStart<700)fails++;else fails=0;
-    if(endCb){const f=endCb;endCb=null;f();return}
-    if(recOn&&!blocked&&fails<7)setTimeout(()=>{if(recOn)startMic()},200);
-    else{recOn=false;setLive(false);draw()}};
-  return r}
-function startMic(){lastStart=Date.now();try{mic=mkRec();mic.start()}catch(e){}}
-function stopBase(){[()=>rec,()=>recog,()=>recognition,()=>sr].forEach(f=>{try{const r=f();if(r&&r.abort)r.abort()}catch(e){}})}
-function startRecording(){
-  try{speechSynthesis.cancel()}catch(e){}
-  if(typeof contOn!=='undefined'&&contOn){wasCont=true;try{setCont(false)}catch(e){}}
-  stopBase();blocked=false;fails=0;recOn=true;
-  setLive(true);setTimeout(()=>{if(recOn)setLive(true)},450);
-  panel.classList.add('on');draw();play('open');startMic()}
-function stopRecording(){recOn=false;try{mic&&mic.stop()}catch(e){}setLive(false);draw();play('click')}
-function finish(){
-  recOn=false;try{mic&&mic.abort()}catch(e){}
-  committed='';curTxt='';panel.classList.remove('on');setLive(false);
-  if(wasCont){wasCont=false;try{setCont(true)}catch(e){}}}
-function sendNow(){
-  const t=fullTxt();if(!t)return;
-  finish();
-  const inp=S('#t'),tb=S('#tb');if(!inp||!tb)return;
-  inp.value=t;const b=tb.querySelector('button');
-  try{if(b)b.click();else{const f=tb.tagName==='FORM'?tb:tb.closest('form');f&&f.requestSubmit&&f.requestSubmit()}}catch(e){}}
-function sendRec(){
-  play('ok');
-  if(recOn){recOn=false;endCb=sendNow;try{mic.stop()}catch(e){sendNow();return}
-    setTimeout(()=>{if(endCb){const f=endCb;endCb=null;f()}},900)}
-  else sendNow()}
-S('#rsd').onclick=sendRec;
-S('#rcn').onclick=()=>{play('click');finish()};
-/* toque no reator: começa a gravar; só para quando tocar no reator de novo */
-document.addEventListener('click',e=>{
-  if(!SR||!e.target.closest||!e.target.closest('#reactor'))return;
-  if(typeof mainDraw!=='undefined'&&!mainDraw)return;
-  if(typeof think!=='undefined'&&think&&!recOn)return;
-  e.stopImmediatePropagation();e.preventDefault();
-  if(recOn)stopRecording();else startRecording()},true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&recOn)stopRecording()});
+  openP=function(k){
+    if(!P[k])return;
+    if(typeof closeSheet==='function')closeSheet();window.__v6closeVoice&&window.__v6closeVoice();
+    const p=mk(k);cur=k;
+    Object.keys(P).forEach(o=>{const q=P[o];if(q.f){q.f.classList.toggle('on',o===k);if(o!==k)setPause(q,true)}});
+    OV.classList.add('on');
+    if(!isOpen){history.pushState({v6:1},'');isOpen=true;freeze(true)}
+    setPause(p,false)};
 
-/* ================= 21) ESTILOS DOS AJUSTES NOVOS ================= */
-const css2=document.createElement('style');
-css2.textContent=HEXCSS+`
-body.ja-open>*:not(#ja-ov):not(#stw){visibility:hidden!important}
-#hgrp{display:flex;align-items:center;gap:8px;margin-left:auto;flex:none}
-#stb{color:var(--ac)!important;background:var(--ac)!important;animation:hp 3.2s ease-in-out infinite!important}
-#stb::before{background:linear-gradient(#05182a,#020a12)!important}
-#stb:active::before{background:rgba(var(--acr),.4)!important}
-#hud{display:grid!important;grid-template-columns:1fr auto 1fr;align-items:start!important}
-#hl{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
-#hb{padding-left:12px;color:var(--mut)}
-#hb .ji{margin-left:5px;color:var(--ac2)}
-#rec{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));width:min(92vw,520px);z-index:75;transform:translateX(-50%) translateY(14px);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s}
-#rec.on{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .2s,transform .2s,visibility 0s}
-#rec .rcd{padding:12px 14px 14px;background:linear-gradient(160deg,rgba(var(--acr),.2),rgba(var(--acr),.04) 60%),rgba(2,10,20,.95);box-shadow:inset 0 0 0 1px rgba(var(--acr),.5),inset 0 0 26px rgba(var(--acr),.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
-#rec .rlb{display:flex;align-items:center;gap:8px;font:10px var(--mono,monospace);letter-spacing:.18em;color:var(--mut)}
-#rec .rlb i{width:8px;height:8px;border-radius:50%;background:var(--mut);flex:none}
-#rec.live .rlb{color:var(--ac2)}
-#rec.live .rlb i{background:#ff4d6a;box-shadow:0 0 10px #ff4d6a;animation:jrp 1s ease-in-out infinite}
-@keyframes jrp{50%{opacity:.25}}
-#rtx{margin:10px 0 12px;min-height:1.4em;max-height:6.4em;overflow-y:auto;font:15px/1.4 system-ui,sans-serif;color:var(--fg,#dff8ff);white-space:pre-wrap;word-break:break-word;scrollbar-width:none}
-#rtx.ph{color:var(--mut);font-style:italic}
-#rec .rbt{display:flex;gap:8px}
-#rec button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;font:700 11px var(--hud,Orbitron,sans-serif);letter-spacing:.14em;padding:13px 18px;clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);cursor:pointer}
-#rec button svg{width:16px;height:16px}
-#rec .rbp{flex:1;background:var(--ac);color:#001}
-#rec .rbp:disabled{opacity:.35}
-#rec .rbp:active:not(:disabled){background:var(--ac2)}
-#rec .rbd{background:rgba(255,90,120,.14);color:#ff7d97}
-#rec .rbd:active{background:#ff5a78;color:#100}`;
-document.head.appendChild(css2);
+  closeP=function(fromPop){
+    if(!isOpen)return;
+    isOpen=false;const p=cur&&P[cur];
+    try{p&&p.f&&p.f.contentWindow.dispatchEvent(new Event('pagehide'))}catch(e){}   /* o Studio salva ao ouvir isso */
+    Object.values(P).forEach(q=>{if(q.f)q.f.classList.remove('on');setPause(q,true)});
+    OV.classList.remove('on');freeze(false);play('close');
+    if(!fromPop&&history.state&&history.state.v6)history.back()};
+  addEventListener('popstate',()=>{if(isOpen)closeP(true)});
 
-/* ================= 22) INÍCIO DOS AJUSTES ================= */
-watch(document);logoHex(document);setTimeout(()=>logoHex(document),1200);
-setTimeout(()=>{try{rs()}catch(e){}},120);
+  const wo=window.open;
+  window.open=function(u){
+    try{if(u){const x=new URL(u,location.href);if(x.origin===location.origin&&/(cofre|studio)\.html?$/i.test(x.pathname)){route(x);return null}}}catch(e){}
+    return wo.apply(this,arguments)};
+
+  /* pré-carrega os dois em segundo plano assim que a abertura termina: abrir fica instantâneo */
+  const iv=setInterval(()=>{if(typeof mainDraw!=='undefined'&&(mainDraw||frozen)){clearInterval(iv);
+    setTimeout(()=>mk('cofre'),1800);setTimeout(()=>mk('studio'),3200)}},400);
+});
 })();
