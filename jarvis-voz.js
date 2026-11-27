@@ -8,7 +8,7 @@ const SPACE     = "Qwen/Qwen3-TTS-Demo"; // troque pelo nome do SEU Space duplic
 const REF_AUDIO = "minha-voz.mp3";        // seu áudio, enviado para o mesmo repositório do Jarvis
 const REF_TEXT  = "";                     // texto EXATO que você fala no áudio. Vazio = modo x-vector (qualidade menor)
 const LANG      = "Portuguese";
-const MODEL     = "1.7B";                 // "0.6B" é mais rápido, "1.7B" é melhor
+const MODEL     = "0.6B";                 // "0.6B" é mais rápido, "1.7B" é melhor
 /* ============================ */
 
 const oldSpeak = window.speak;            // voz original do navegador (reserva)
