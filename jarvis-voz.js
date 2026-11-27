@@ -5,7 +5,7 @@
 (()=>{
 /* ====== CONFIGURE AQUI ====== */
 const SPACE     = "Qwen/Qwen3-TTS-Demo"; // troque pelo nome do SEU Space duplicado (usuario/nome)
-const REF_AUDIO = "[Jarvis (UCM) - Português Brasileiro]Vocês......raus..mp3";        // seu áudio, enviado para o mesmo repositório do Jarvis
+const REF_AUDIO = "minha-voz.mp3";        // seu áudio, enviado para o mesmo repositório do Jarvis
 const REF_TEXT  = "";                     // texto EXATO que você fala no áudio. Vazio = modo x-vector (qualidade menor)
 const LANG      = "Portuguese";
 const MODEL     = "1.7B";                 // "0.6B" é mais rápido, "1.7B" é melhor
